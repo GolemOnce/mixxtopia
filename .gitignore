@@ -1,0 +1,6 @@
+#common
+*.env
+
+#back-end
+/back-end/.venv
+/back-end/requirements.txt

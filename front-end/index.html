@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NMIXX 해시태그 총공 원클릭</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+            margin: 24px;
+            line-height: 1.4;
+        }
+
+        .card {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 14px;
+        }
+
+        h1 {
+            font-size: 20px;
+            margin: 0 0 12px;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 12px 0;
+        }
+
+        button {
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            background: #fff;
+            cursor: pointer;
+        }
+
+        button.primary {
+            border-color: #111;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            background: #f7f7f7;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #eee;
+        }
+
+        .muted {
+            color: #666;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        .warn {
+            color: #b00020;
+        }
+
+        input[type="checkbox"] {
+            transform: translateY(1px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h1>배이 생일 해시태그 총공 원클릭</h1>
+
+        <div class="row">
+            <button id="btnTweet" class="primary">총공!</button>
+            <button id="btnReroll">문구 변경</button>
+            <button id="btnCopy">복사</button>
+        </div>
+
+        <pre id="preview"></pre>
+        <div id="count" class="muted"></div>
+        <div class="muted">
+            <h3>※ Web Intent로는 “자동 게시”는 불가이고, X 글쓰기 화면으로 채워서 이동한 뒤 사용자가 게시 버튼을 눌러야 합니다. </h3>
+            <h3>
+                총공 버튼 클릭 시 자동으로 문구 변환됩니다.
+            </h3>
+            <h3>
+                짧은 시간에 많은 트윗을 할 경우(리트윗 포함) 계정 일시정지 혹은 이용정지가 될 수 있으니, 10 ~ 20초 정도 여유를 두고 트윗해주세요.
+            </h3>
+        </div>
+    </div>
+
+    <script>
+        const btnTweet = document.getElementById("btnTweet");
+        const btnReroll = document.getElementById("btnReroll");
+        const btnCopy = document.getElementById("btnCopy");
+
+        let CFG = null;
+        let currentText = "로딩 중...";
+
+        function setReady(ready) {
+            btnTweet.disabled = !ready;
+            btnReroll.disabled = !ready;
+            btnCopy.disabled = !ready;
+        }
+
+        async function loadPhrases() {
+            const res = await fetch("/api/phrases", { cache: "no-store" });
+            CFG = await res.json();
+        }
+
+        function buildTextFromCfg() {
+            if (!CFG || !Array.isArray(CFG.pairs) || CFG.pairs.length === 0) return "문구 로드 실패";
+
+            const pick = CFG.pairs[Math.floor(Math.random() * CFG.pairs.length)];
+
+            // 방어: 데이터가 [3개]가 아닐 때
+            const l1 = pick?.[0] ?? "";
+            const l3 = pick?.[1] ?? "";
+            const l5 = pick?.[2] ?? "";
+            const my_url = "\nhttps://mixxgolem.shop"
+            return [l1, CFG.fixed2, l3, CFG.fixed4, l5, my_url].join("\n");
+        }
+        
+        function render() {
+            document.getElementById("preview").textContent = currentText;
+
+            const len = currentText.length;
+            const countEl = document.getElementById("count");
+            countEl.textContent = `현재 문자수(대략): ${len}`;
+            countEl.className = "muted" + (len > 280 ? " warn" : "");
+            if (len > 280) countEl.textContent += "  ⚠️ 280자 초과 가능";
+        }
+
+        render();
+        setReady(false);
+
+        (async () => {
+            try {
+                await loadPhrases();
+                currentText = buildTextFromCfg();
+            } catch {
+                currentText = "문구 로드 실패";
+            }
+            render();
+            setReady(true);
+        })();
+
+        function openXIntent(text) {
+            const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text);
+            window.open(url, "_blank", "noopener,noreferrer");
+        }
+
+        function getClientId() {
+            const key = "mixx_client_id";
+            let id = localStorage.getItem(key);
+            if (!id) {
+                id = crypto.randomUUID();
+                localStorage.setItem(key, id);
+            }
+            return id;
+        }
+
+        function logClick() {
+            const payload = JSON.stringify({ clientId: getClientId() });
+
+            if (navigator.sendBeacon) {
+                navigator.sendBeacon("/api/click", new Blob([payload], { type: "application/json" }));
+            } else {
+                fetch("/api/click", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: payload,
+                    keepalive: true,
+                }).catch(() => { });
+            }
+        }
+
+
+        btnTweet.addEventListener("click", () => {
+            logClick();
+            openXIntent(currentText);
+            currentText = buildTextFromCfg();
+            render();
+        });
+
+        btnReroll.addEventListener("click", () => {
+            currentText = buildTextFromCfg();
+            render();
+        });
+
+        btnCopy.addEventListener("click", async () => {
+            try {
+                await navigator.clipboard.writeText(currentText);
+                alert("복사됨!");
+            } catch {
+                alert("복사 실패: 브라우저 권한을 확인해 주세요.");
+            }
+        });
+
+    </script>
+</body>
+
+</html>

@@ -1,7 +1,26 @@
 #common
 *.env
 
+#front-end
+/front-end/dist/
+/front-end/node_modules/
+/front-end/.vite/
+/front-end/*.local
+
 #back-end
 /back-end/.venv
 /back-end/requirements.txt
 /back-end/DB.txt
+/back-end/mongo.json
+/back-end/__pycache__/
+/back-end/*.pyc
+/back-end/*.pyo
+
+#dummy
+x_index.html
+
+# scrapper
+/scrapping
+
+# x_file
+/x_docs

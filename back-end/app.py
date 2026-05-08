@@ -4,7 +4,10 @@ import redis
 import time
 
 import os
+from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
+
+load_dotenv("hashtag-api.env")
 
 app = FastAPI()
 
@@ -12,13 +15,13 @@ app = FastAPI()
 MONGODB_URI = os.environ["MONGODB_URI"]
 mongo = AsyncIOMotorClient(MONGODB_URI)
 db = mongo["hashtag"]
-phrases_col = db["phrases"]
+phrases_col = db["Heavy_Serenade"]
 clients_col = db["clients"]
 stats_col = db["stats"]
 
 #redis
 r = redis.Redis(host="127.0.0.1", port=6379, decode_responses=True)
-KEY_TOTAL = "hashtag:clicks:total"
+KEY_TOTAL = "hashtag:clicks:total" # 
 KEY_CLIENTS = "hashtag:clients:set"
 
 

@@ -9,6 +9,7 @@ interface PhrasesConfig {
 interface Stats {
   totalClicks: number
   uniqueClients: number
+  pairsCount: number
 }
 
 function getClientId(): string {
@@ -119,7 +120,7 @@ export default function BusterCall() {
       </div>
       {stats && (
         <div className="muted">
-          총공 횟수: {stats.totalClicks.toLocaleString()}회 &nbsp;|&nbsp; 참여자 수: {stats.uniqueClients.toLocaleString()}명
+          총공 횟수: {stats.totalClicks.toLocaleString()}회 &nbsp;|&nbsp; 참여자 수: {stats.uniqueClients.toLocaleString()}명 &nbsp;|&nbsp; 템플릿 수: {stats.pairsCount}개
         </div>
       )}
       <pre>{text}</pre>

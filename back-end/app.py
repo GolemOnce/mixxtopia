@@ -25,6 +25,7 @@ r = aioredis.Redis(host="127.0.0.1", port=6379, decode_responses=True)
 KEY_TOTAL = "hashtag:clicks:total"
 KEY_CLIENTS = "hashtag:clients:set"
 KEY_PHRASES = "hashtag:phrases"
+KEY_PAIRS_COUNT = "hashtag:phrases:count"
 
 
 @app.get("/api/phrases")
@@ -35,6 +36,7 @@ async def get_phrases():
     doc = await phrases_col.find_one({"active": True}, {"_id": 0})
     if doc:
         await r.set(KEY_PHRASES, json.dumps(doc), ex=3600)
+        await r.set(KEY_PAIRS_COUNT, len(doc.get("pairs", [])))
     return doc or {}
 
 @app.post("/api/click")
@@ -56,4 +58,5 @@ async def click(req: Request):
 async def stats():
     total = int(await r.get(KEY_TOTAL) or 0)
     unique_clients = int(await r.scard(KEY_CLIENTS) or 0)
-    return {"totalClicks": total, "uniqueClients": unique_clients, "ts": int(time.time())}
+    pairs_count = int(await r.get(KEY_PAIRS_COUNT) or 0)
+    return {"totalClicks": total, "uniqueClients": unique_clients, "pairsCount": pairs_count, "ts": int(time.time())}

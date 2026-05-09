@@ -1,0 +1,17 @@
+#fast api
+fastapi
+uvicorn[standard]
+
+#redis cache
+redis
+
+#mongoDB
+motor[srv]
+pymongo
+
+#env
+python-dotenv
+
+#JWT + auth
+passlib[bcrypt]
+python-jose[cryptography]

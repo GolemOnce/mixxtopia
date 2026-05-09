@@ -6,6 +6,11 @@ interface PhrasesConfig {
   fixed4: string
 }
 
+interface Stats {
+  totalClicks: number
+  uniqueClients: number
+}
+
 function getClientId(): string {
   const key = 'mixx_client_id'
   let id = localStorage.getItem(key)
@@ -26,6 +31,15 @@ function buildText(cfg: PhrasesConfig): string {
   return [l1, cfg.fixed2, l3, cfg.fixed4, l5, myUrl].join('\n')
 }
 
+async function fetchStats(): Promise<Stats | null> {
+  try {
+    const res = await fetch('/api/stats', { cache: 'no-store' })
+    return await res.json()
+  } catch {
+    return null
+  }
+}
+
 function logClick() {
   const payload = JSON.stringify({ clientId: getClientId() })
   if (navigator.sendBeacon) {
@@ -44,6 +58,7 @@ export default function BusterCall() {
   const [cfg, setCfg] = useState<PhrasesConfig | null>(null)
   const [text, setText] = useState('로딩 중...')
   const [ready, setReady] = useState(false)
+  const [stats, setStats] = useState<Stats | null>(null)
 
   useEffect(() => {
     fetch('/api/phrases', { cache: 'no-store' })
@@ -57,6 +72,7 @@ export default function BusterCall() {
         setText('문구 로드 실패')
         setReady(true)
       })
+    fetchStats().then((s) => { if (s) setStats(s) })
   }, [])
 
   function reroll() {
@@ -72,6 +88,7 @@ export default function BusterCall() {
       'noopener,noreferrer',
     )
     if (cfg) setText(buildText(cfg))
+    fetchStats().then((s) => { if (s) setStats(s) })
   }
 
   async function handleCopy() {
@@ -100,6 +117,11 @@ export default function BusterCall() {
           복사
         </button>
       </div>
+      {stats && (
+        <div className="muted">
+          총공 횟수: {stats.totalClicks.toLocaleString()}회 &nbsp;|&nbsp; 참여자 수: {stats.uniqueClients.toLocaleString()}명
+        </div>
+      )}
       <pre>{text}</pre>
       <div className={`muted${overLimit ? ' warn' : ''}`}>
         현재 문자수(대략): {len}

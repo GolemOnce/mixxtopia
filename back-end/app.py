@@ -35,7 +35,7 @@ async def get_phrases():
         return json.loads(cached)
     doc = await phrases_col.find_one({"active": True}, {"_id": 0})
     if doc:
-        await r.set(KEY_PHRASES, json.dumps(doc), ex=3600)
+        await r.set(KEY_PHRASES, json.dumps(doc))
         await r.set(KEY_PAIRS_COUNT, len(doc.get("pairs", [])))
     return doc or {}
 

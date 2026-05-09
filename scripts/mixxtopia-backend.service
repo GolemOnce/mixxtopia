@@ -1,0 +1,14 @@
+[Unit]
+Description=Mixxtopia FastAPI Backend
+After=network.target redis.service
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/mixxtopia/back-end
+ExecStart=/home/ubuntu/mixxtopia/back-end/.venv/bin/python -m uvicorn app:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=3
+EnvironmentFile=/home/ubuntu/mixxtopia/back-end/hashtag-api.env
+
+[Install]
+WantedBy=multi-user.target

@@ -106,7 +106,7 @@ export default function BusterCall() {
 
   return (
     <div className="card">
-      <h1>Heavy Serenade 컴백 해시태그 총공 원클릭</h1>
+      <h1>규진 생일 해시태그 총공 원클릭</h1>
       <div className="row">
         <button className="primary" onClick={handleTweet} disabled={!ready}>
           총공!

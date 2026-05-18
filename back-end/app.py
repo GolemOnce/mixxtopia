@@ -16,7 +16,7 @@ app = FastAPI()
 MONGODB_URI = os.environ["MONGODB_URI"]
 mongo = AsyncIOMotorClient(MONGODB_URI)
 db = mongo["hashtag"]
-phrases_col = db["Heavy_Serenade"]
+phrases_col = db["kyujin_26"]
 clients_col = db["clients"]
 stats_col = db["stats"]
 

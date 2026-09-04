@@ -1,5 +1,7 @@
 #common
-*.env
+.env
+.env.*
+!.env.example
 
 #front-end
 /front-end/dist/
@@ -11,9 +13,10 @@
 /back-end/.venv
 /back-end/DB.txt
 /back-end/mongo.json
-/back-end/__pycache__/
-/back-end/*.pyc
-/back-end/*.pyo
+/back-end/**/__pycache__/
+/back-end/**/*.pyc
+/back-end/**/*.pyo
+/back-end/.ruff_cache/
 
 #dummy
 x_index.html

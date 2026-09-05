@@ -23,7 +23,8 @@ NMIXX(또는 추후 타 아티스트 추가 가능) 팬을 위한 덕질 도구 
 
 ## 배포/인프라
 - EC2 t3.micro 현재 사용 중, 병목시 t3.small 등으로 업그레이드
-- IaC(terraform)으로 인프라 관리(현재 IaC없이 EC2 내에 api 몇개 들어간 1페이지 규모 nginx로 서빙 중)
+- IaC(terraform)으로 인프라 관리(초기 상태 : IaC없이 EC2 내에 api 몇개 들어간 1페이지 규모 nginx로 서빙 중)
+- Docker-Compose를 활용해 어플리케이션과 nginx, Redis를 구동하고, MongoDB는 기존의 Atlas 활용
 
 ## 기능 구현 및 코드 컨벤션
 

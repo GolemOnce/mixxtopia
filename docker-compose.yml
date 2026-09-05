@@ -1,0 +1,42 @@
+services:
+  backend:
+    build: ./back-end
+    container_name: mixxtopia-backend
+    restart: unless-stopped
+    env_file:
+      - ./back-end/.env
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - redis
+    networks:
+      - internal
+
+  redis:
+    image: redis:7-alpine
+    container_name: mixxtopia-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - internal
+
+  nginx:
+    build: ./front-end
+    container_name: mixxtopia-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  redis-data:

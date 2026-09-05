@@ -21,15 +21,8 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
-            # Backend: install dependencies and restart
-            cd back-end
-            python3 -m venv .venv
-            .venv/bin/pip install -q -r requirements.txt
-            sudo systemctl restart mixxtopia-backend
-            cd ..
+            # 컨테이너 재빌드 및 재기동 (backend, nginx, redis)
+            docker compose up -d --build --remove-orphans
 
-            # Frontend: build and reload nginx
-            cd front-end
-            npm ci --silent
-            npm run build
-            sudo systemctl reload nginx
+            # 미사용 이미지 정리
+            docker image prune -f

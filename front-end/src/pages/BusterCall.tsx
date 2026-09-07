@@ -34,7 +34,7 @@ function buildText(cfg: PhrasesConfig): string {
 
 async function fetchStats(): Promise<Stats | null> {
   try {
-    const res = await fetch('/api/stats', { cache: 'no-store' })
+    const res = await fetch('/bustercall/stats', { cache: 'no-store' })
     return await res.json()
   } catch {
     return null
@@ -44,9 +44,9 @@ async function fetchStats(): Promise<Stats | null> {
 function logClick() {
   const payload = JSON.stringify({ clientId: getClientId() })
   if (navigator.sendBeacon) {
-    navigator.sendBeacon('/api/click', new Blob([payload], { type: 'application/json' }))
+    navigator.sendBeacon('/bustercall/click', new Blob([payload], { type: 'application/json' }))
   } else {
-    fetch('/api/click', {
+    fetch('/bustercall/click', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: payload,
@@ -62,7 +62,7 @@ export default function BusterCall() {
   const [stats, setStats] = useState<Stats | null>(null)
 
   useEffect(() => {
-    fetch('/api/phrases', { cache: 'no-store' })
+    fetch('/bustercall/reroll', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data: PhrasesConfig) => {
         setCfg(data)
@@ -73,7 +73,9 @@ export default function BusterCall() {
         setText('문구 로드 실패')
         setReady(true)
       })
-    fetchStats().then((s) => { if (s) setStats(s) })
+    fetchStats().then((s) => {
+      if (s) setStats(s)
+    })
   }, [])
 
   function reroll() {
@@ -89,7 +91,9 @@ export default function BusterCall() {
       'noopener,noreferrer',
     )
     if (cfg) setText(buildText(cfg))
-    fetchStats().then((s) => { if (s) setStats(s) })
+    fetchStats().then((s) => {
+      if (s) setStats(s)
+    })
   }
 
   async function handleCopy() {
@@ -120,7 +124,8 @@ export default function BusterCall() {
       </div>
       {stats && (
         <div className="muted">
-          총공 횟수: {stats.totalClicks.toLocaleString()}회 &nbsp;|&nbsp; 참여자 수: {stats.uniqueClients.toLocaleString()}명 &nbsp;|&nbsp; 템플릿 수: {stats.pairsCount}개
+          총공 횟수: {stats.totalClicks.toLocaleString()}회 &nbsp;|&nbsp; 참여자 수:{' '}
+          {stats.uniqueClients.toLocaleString()}명 &nbsp;|&nbsp; 템플릿 수: {stats.pairsCount}개
         </div>
       )}
       <pre>{text}</pre>
@@ -129,10 +134,15 @@ export default function BusterCall() {
         {overLimit ? '  ⚠️ 280자 초과 가능' : ''}
       </div>
       <div className="muted">
-        <h3>※ "자동 게시"는 불가이고, X 글쓰기 화면으로 채워서 이동한 뒤 사용자가 게시 버튼을 눌러야 합니다.</h3>
+        <h3>
+          ※ "자동 게시"는 불가이고, X 글쓰기 화면으로 채워서 이동한 뒤 사용자가 게시 버튼을 눌러야
+          합니다.
+        </h3>
         <h3>※ 총공 버튼 클릭 시 자동으로 문구 변환됩니다.</h3>
         <h3>
-          ※ X 정책 상, 비구독 계정은 하루 트윗 50개, 리트윗 200개로 제한되어 있습니다. 또, 짧은 시간에 많은 트윗을 할 경우(리트윗 포함) 계정 일시정지 혹은 이용정지가 될 수 있으니, 10~20초 정도 여유를 두고 트윗(혹은 리트윗)해주시기 바랍니다.
+          ※ X 정책 상, 비구독 계정은 하루 트윗 50개, 리트윗 200개로 제한되어 있습니다. 또, 짧은
+          시간에 많은 트윗을 할 경우(리트윗 포함) 계정 일시정지 혹은 이용정지가 될 수 있으니,
+          10~20초 정도 여유를 두고 트윗(혹은 리트윗)해주시기 바랍니다.
         </h3>
       </div>
     </div>

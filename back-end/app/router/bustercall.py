@@ -6,12 +6,12 @@ from app.service import bustercall as bustercall_service
 router = APIRouter(tags=["bustercall"])
 
 
-@router.get("/api/phrases")
+@router.get("/bustercall/reroll")
 async def get_phrases():
     return await bustercall_service.get_phrases()
 
 
-@router.post("/api/click")
+@router.post("/bustercall/click")
 async def click(req: Request):
     try:
         body = await req.json()
@@ -24,6 +24,6 @@ async def click(req: Request):
     return JSONResponse({"ok": True, "total": total})
 
 
-@router.get("/api/stats")
+@router.get("/bustercall/stats")
 async def stats():
     return await bustercall_service.get_stats()

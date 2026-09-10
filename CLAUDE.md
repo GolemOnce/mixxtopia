@@ -77,17 +77,15 @@ root
   - 악성 사용자 활동 방지를 위한 IP + 접속기록 수집 동의 서명
     - (필수) 서비스 이용약관 동의
     - (필수) 개인정보 수집·이용 동의 (IP/접속기록 수집 조항 포함)
-- 비로그인도 글, 사진, 스케쥴, 투표 등등 조회기능 모두 이용 가능
+- 비로그인도 글, 사진, 스케쥴, 투표 등등 조회 기능은 모두 이용 가능
 - 건의/이의제기/신고/글/댓글 쓰기 등은 로그인 후 가능
 
-## 총공(bustercall) 서비스
-
+### 총공(bustercall) 서비스
 - 스택: FastAPI + MongoDB(문구/클라이언트/통계) + Redis(카운터 캐시)
-- 엔드포인트: `GET /api/phrases`, `POST /api/click`, `GET /api/stats`
-- **이 로직을 새로 짜지 말 것.**
+- 엔드포인트: `GET /api/bustercall/reroll`, `POST /api/bustercall/click`, `GET /api/bustercall/stats`, `POST /api/bustercall/campaign`(admin,manager 전용 — 총공 캠페인 등록/전환)
 
 ### database
-- 사진을 제외한 도메인은 기본적으로 mongodb(Atlas) 사용하지만, schemas로 엄격히 제한하여 관리할 예정
+- 사진을 제외한 도메인은 기본적으로 mongodb(Atlas) 사용하지만, schemas로 엄격히 제한하여 관리
 - Redis를 활용해 자주 조회되는 일정 캐싱
 - 사진/동영상 등 미디어는 S3 storage 저장 + CloudFront 캐싱 활용
   - 서버에서 직접 다루지 않고 Presigned URL 방식 사용
@@ -110,6 +108,13 @@ root
   - 클래스 내부 메서드 사이: 1줄
   - import 구문과 코드 사이: 2줄
 - 파일 끝 개행 한 줄
+- api 리소스는 복수형(post->posts, schedule->schedules, vote->votes), 페이지 주소는 단수형(board, schedule, vote...)
+
+### API 명세서
+- docs/api-spec.md 참조
+
+### 테이블 명세서
+- docs/db-schema.md 참조
 
 ## 실행 명령어 (플레이스홀더 — 실제 명령어로 교체 필요)
 
@@ -149,9 +154,8 @@ ruff format .        # back-end/ — 포맷
 ```
 
 ## 하지 말아야 할 것
-
+- 정책이 명확히 나와있지 않은 부분은 질문
 - 버블/팬클럽 전용 유료 콘텐츠를 사진 검색 결과에 노출하는 코드 작성 금지
-- 총공 서비스(`/api/phrases`, `/api/click`, `/api/stats`) 로직 중복 구현 금지
 - 확인되지 않은 팬 스케줄(비공식 루머 등)을 스케줄표 데이터로 넣는 로직 금지
 - 배포 서버(EC2) 직접 SSH 접속/재시작(systemctl restart 등) 금지 — 배포는 반드시
   `.github/workflows/deploy.yml`(main 브랜치 push 시 자동 CD)을 통해서만

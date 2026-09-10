@@ -4,6 +4,8 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+# B008: FastAPI의 Depends(...)를 인자 기본값으로 쓰는 것은 공식 권장 패턴이므로 제외
+ignore = ["B008"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["app"]

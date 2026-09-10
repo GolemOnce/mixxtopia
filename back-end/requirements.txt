@@ -15,3 +15,9 @@ python-dotenv
 #JWT + auth
 passlib[bcrypt]
 python-jose[cryptography]
+
+#OAuth provider 검증용 HTTP client
+httpx
+
+#S3 (사진/동영상 미디어)
+boto3

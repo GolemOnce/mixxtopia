@@ -93,7 +93,7 @@
 - is_current	boolean	현재 진행 중인 캠페인
 
 ### 참고
-- category enum (컴백(comeback), 생일(birthday), n주년(debut))
+- category enum (컴백(comeback), 생일(birthday), n주년(anniversary))
 - detail 컴백의 경우 "곡 이름"(예_Heavy Seranade), 생일은 "YYYY"(예_2026), n주년은 "n"(예_5)
 - db에서 "mixxpia" Database의 "phrases" 컬렉션에서 category와 detail조합으로
 - member는 생일일 경우 단일 멤버 이름(lily, haewon, sullyoon, bae, jiwoo, kyujin)으로, 컴백이나 n주년은 nmixx로 구분.

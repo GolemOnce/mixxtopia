@@ -28,13 +28,13 @@ function buildText(cfg: PhrasesConfig): string {
   const l1 = pick?.[0] ?? ''
   const l3 = pick?.[1] ?? ''
   const l5 = pick?.[2] ?? ''
-  const myUrl = '\nhttps://mixxtopia.site'
+  const myUrl = '\nhttps://mixxtopia.site/bustercall'
   return [l1, cfg.fixed2, l3, cfg.fixed4, l5, myUrl].join('\n')
 }
 
 async function fetchStats(): Promise<Stats | null> {
   try {
-    const res = await fetch('/bustercall/stats', { cache: 'no-store' })
+    const res = await fetch('/api/bustercall/stats', { cache: 'no-store' })
     return await res.json()
   } catch {
     return null
@@ -44,9 +44,9 @@ async function fetchStats(): Promise<Stats | null> {
 function logClick() {
   const payload = JSON.stringify({ clientId: getClientId() })
   if (navigator.sendBeacon) {
-    navigator.sendBeacon('/bustercall/click', new Blob([payload], { type: 'application/json' }))
+    navigator.sendBeacon('/api/bustercall/click', new Blob([payload], { type: 'application/json' }))
   } else {
-    fetch('/bustercall/click', {
+    fetch('/api/bustercall/click', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: payload,
@@ -62,7 +62,7 @@ export default function BusterCall() {
   const [stats, setStats] = useState<Stats | null>(null)
 
   useEffect(() => {
-    fetch('/bustercall/reroll', { cache: 'no-store' })
+    fetch('/api/bustercall/reroll', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data: PhrasesConfig) => {
         setCfg(data)

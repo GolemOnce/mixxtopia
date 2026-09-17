@@ -73,28 +73,38 @@
 - 목록 조회는 category/member 쿼리파라미터로 필터링, start_at 오름차순 정렬이 기본값. "지난 일정 숨기기" 필터는 실제 달력/게시판 화면 만들 때 필요한 형태로 다시 추가 예정(빼둠)
 
 ## posts(post.py)
-- post_id	INT	PK
-- author_id	UUID	작성자(users_id 참조)
+- post_id	UUID	PK
+- post_num INT 게시글 번호
+- author_id UUID 작성자(users_id 참조)
+- author  varchar(8)	작성자 닉네임(작성 시점 스냅샷)
+- category enum 글 종류
 - title	varchar(100)	제목
 - content	varchar(1000)	내용
 
 ### 참고
-- post_id만 유일하게 int형(1부터 increase)으로 pk생성
-  - app.service.post에서 pk생성해주는 __함수 구현
+- post_num: category별 독립적인 int형(1부터 increase)으로 부여
+  - app.service.post의 `__next_post_num`에서 category별 카운터(post_counters 컬렉션)를 원자적으로 증가시켜 생성
+- category 공지(notice), 자유(free), 질문(question), 건의(suggestion) 구분
+- author_id는 최초 명세에 없던 필드로, author(닉네임 스냅샷)만으로는 수정/삭제 권한의 "owner" 판별이 불가능해서(닉네임은 불변 식별자가 아님) 추가함
+- category는 등록 후 변경 불가(PATCH 대상에서 제외) — 카테고리를 옮기면 post_num 체계가 깨짐
 
 ## comments(comment.py)
 - comment_id	UUID	PK
-- post_id	INT	게시글 id(posts_id 참조)
-- author_id	UUID	작성자(users_id 참조)
+- post_id	UUID	게시글 id(posts.post_id 참조)
+- author_id UUID 작성자(users_id 참조)
+- author	varchar(8)	작성자 닉네임(작성 시점 스냅샷)
 - parent_id	UUID	NULLABLE 부모 댓글
-- mention_to UUID NULLABLE 답글 대상의 users_id9(태그용)
+- mention_to varchar(8) 부모 댓글 작성자 닉네임(작성 시점 스냅샷)
 - content	varchar(100)	내용
 
 ### 참고
 - 부모 댓글이 없는 경우 일반 댓글
-- 부모 댓글이 있는 경우 대댓글(답글)
+- 부모 댓글이 있는 경우 대댓글(답글). 저장은 2단계로 평탄화됨 — 답글에 답글을 달아도 parent_id는 그 답글의 원댓글(root)을 가리키고, mention_to만 실제로 답한 대상(그 답글의 작성자)으로 남음
+- post_id는 원래 명세에 INT로 적혀있었으나, posts_id가 UUID(post_id)+INT(post_num, category별 별도 번호)로 나뉘면서 post_num만으로는 글을 특정할 수 없어(공지#1, 자유#1처럼 category 넘어 중복) posts.post_id(UUID)를 참조하도록 정정함
+- author_id는 posts와 동일한 사유로 추가(owner 판별용)
 - 특정 게시글 조회 시, 해당 게시글의 모든 댓글(대댓글 포함) DB 쿼리 레벨에서 페이지네이션, 답글 트리 조립은 그 페이지 안에서만(최상위 댓글(최신순/등록순 브라우저에서 선택 가능) 기준으로 20개 페이지네이션하고, 그 댓글들의 답글도 통째로 같이 가져오는 방식)
-  - 답글이 있는 댓글의 경우 "답글 n개"로 댓글 아래 표시 후, "답글 n개"를 누르면 답글 렌더링 
+  - 답글이 있는 댓글의 경우 "답글 n개"로 댓글 아래 표시 후, "답글 n개"를 누르면 답글 렌더링
+- soft delete된 댓글은 조회에서 완전히 제외하지 않고 content를 "삭제된 댓글입니다"로 대체해서 반환 — 답글이 딸린 부모가 삭제돼도 스레드가 끊기지 않게 하기 위함(다른 도메인들과 달리 deleted_at으로 완전히 필터링하지 않는 유일한 케이스)
 
 ## phrases(bustercall.py, 총공문구 + 집계)
 - BaseEntity 적용(phrases_id는 PK 역할, Mongo `_id`에 문자열로 그대로 사용 — users와 동일 패턴)

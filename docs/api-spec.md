@@ -57,15 +57,29 @@
 
 ## posts(post.py)
 게시글 목록 조회	GET	/posts	게시글	all
-게시글 상세 조회	GET	/posts/{postId}	게시글	all
+게시글 상세 조회	GET	/posts/{post_id}	게시글	all
 게시글 작성	POST	/posts	게시글	admin,manager,user
-게시글 수정	PATCH	/posts/{postId}	게시글	admin,manager,owner
-게시글 삭제	DELETE	/posts/{postId}	게시글	admin,manager,owner
+게시글 수정	PATCH	/posts/{post_id}	게시글	admin,manager,owner
+게시글 삭제	DELETE	/posts/{post_id}	게시글	admin,manager,owner
+
+### 참고
+- `GET /posts`는 쿼리파라미터 `category`, `page`, `page_size`(기본 20)로 필터링/페이지네이션. `created_at` 내림차순(최신순) 정렬
+- category(notice/free/question/suggestion) 중 notice(공지)는 admin/manager만 작성 가능(그 외 카테고리는 로그인한 모든 role)
+- "owner"는 서비스 레벨에서 `post.author_id == 로그인한 유저`로 판단(admin/manager는 무조건 통과)
+- 작성 시점 IP를 access_logs에 기록(`action=post_create`)
+- category는 변경 불가(PATCH 대상에서 제외) — post_num이 category별로 매겨지므로 카테고리 이동은 새 글 작성으로 처리
 
 ## comments(comment.py)
-댓글 목록 조회	GET	/comments/{postId}	댓글	all
-댓글 작성	POST	/comments/{postId}	댓글	admin,manager,user
-댓글 삭제	DELETE	/comments/{commentId}	댓글	admin,manager,owner
+댓글 목록 조회	GET	/comments/{post_id}	댓글	all
+댓글 작성	POST	/comments/{post_id}	댓글	admin,manager,user
+댓글 삭제	DELETE	/comments/{comment_id}	댓글	admin,manager,owner
+
+### 참고
+- `GET /comments/{post_id}`는 최상위 댓글만 `sort`(asc/desc, 기본 asc)+`page`+`page_size`(기본 20)로 페이지네이션하고, 그 페이지에 포함된 댓글들의 답글은 전부(페이지네이션 없이) 같이 내려줌 — `replies` 필드에 중첩
+- 저장은 2단계로 평탄화됨 — 답글에 또 답글을 달면(`parent_id`로 답글의 id를 보내도) 실제로는 그 답글의 원댓글(root)에 매달리고, `mention_to`만 실제로 답한 대상(그 답글의 작성자)으로 남음
+- 답글 작성 시 부모 댓글 작성자 닉네임을 `mention_to`로 스냅샷 저장
+- soft delete된 댓글은 목록에서 완전히 빠지지 않고 내용만 "삭제된 댓글입니다"로 대체 — 답글이 있는 채로 부모가 삭제돼도 스레드가 안 끊기게 하기 위함
+- 댓글 작성 시점 IP를 access_logs에 기록(`action=comment_create`)
 
 ## bustercall(bustercall.py)
 총공	POST	/api/bustercall/click	총공	all

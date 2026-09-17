@@ -98,6 +98,14 @@
 - 관리자 페이지는 `GET /api/bustercall/campaigns`로 최신순 목록을 보여주고, 그중 하나를 선택하면 문구가 폼에 자동으로 채워짐(수정용), "새로 만들기"를 선택하면 빈 폼(신규 등록용)
 
 ## suggests(suggest.py)
-건의 조회	GET	/suggests	건의함	admin,manager
+건의/신고 목록 조회	GET	/suggests	건의함	admin,manager
+건의/신고 상세 조회	GET	/suggests/{suggest_id}	건의함	admin,manager
 건의 작성	POST	/suggests	건의함	admin,manager,user
-건의 처리 완료   POST    /suggests/{suggest_id}  건의함  admin, manager
+건의/신고 처리 완료   POST    /suggests/{suggest_id}  건의함  admin,manager
+
+### 참고
+- `GET /suggests/{suggest_id}`는 명세엔 없었으나 추가함 — status가 pending이면 조회 시점에 read로 자동 전환(1회성)되는 흐름을 구현하려면 상세 조회 endpoint가 필요해서
+- `GET /suggests`는 `category`, `status`, `page`, `page_size`(기본 20)로 필터링/페이지네이션, created_at 내림차순(최신순)
+- `POST /suggests`는 category가 항상 suggestion으로 고정됨(로그인한 유저의 일반 건의). report_* 카테고리는 각 도메인의 `/{도메인}/{id}/report`류 endpoint를 통해서만 생성됨(예: `POST /users/{user_id}/report`)
+- `POST /suggests/{suggest_id}`(처리 완료)는 상태를 무조건 done으로 전환(멱등)
+- 프론트에는 created_by/updated_by/deleted_by 비노출(내부 감사용, 다른 도메인과 동일)

@@ -148,4 +148,5 @@
   - bustercall(phrases), photo, post, comment, schedule, user, vote 모두 해당
 - target_id는 최초 명세에 없던 필드로, report_* 카테고리일 때 신고 대상을 남기기 위해 추가함(건의는 None)
 - category는 `app/model/suggest.py`의 `SuggestCategory`(suggestion, report_user, report_post, report_comment, report_photo, report_schedule, report_vote, report_bustercall)로 구현됨
-- 지금은 `POST /users/{user_id}/report`(category=report_user)만 구현됨. 목록 조회/처리완료(GET·POST /suggests)와 다른 도메인 신고는 suggests 도메인 자체를 만들 때 이어서 구현 예정
+- `GET/POST /suggests`, `GET/POST /suggests/{suggest_id}` 전부 구현됨. `POST /suggests`는 category=suggestion 고정, report_*는 각 도메인의 report endpoint를 통해서만 생성됨(현재 report_user만 구현, 나머지 도메인 report는 해당 도메인 작업 시 이어서 구현 예정)
+- 상세 조회(`GET /suggests/{suggest_id}`) 시 status가 pending이면 read로 자동 전환(1회성 side effect). 처리 완료(`POST /suggests/{suggest_id}`)는 무조건 done으로 전환

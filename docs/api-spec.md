@@ -24,10 +24,15 @@
 
 ## votes(vote.py)
 투표 목록 조회	GET	/votes	투표	all
-투표 상세 조회	GET	/votes/{voteId}	투표	all
+투표 상세 조회	GET	/votes/{vote_id}	투표	all
 투표 등록	POST	/votes	투표	admin,manager
-투표 수정	PATCH	/votes/{voteId}	투표	admin,manager
-투표 삭제	DELETE	/votes/{voteId}	투표	admin,manager
+투표 수정	PATCH	/votes/{vote_id}	투표	admin,manager
+투표 삭제	DELETE	/votes/{vote_id}	투표	admin,manager
+
+### 참고
+- `GET /votes`는 쿼리파라미터 `member`, `organizer`(벅스/멜론/엠넷플러스 등 투표 매체)로 필터링 가능. 기본 정렬은 `start_at` 오름차순
+- 등록/수정 시 start_at > end_at이면 400
+- 삭제는 soft delete(BaseEntity의 deleted_at). schedules와 구조는 거의 동일하나 category/location 없음
 
 ## schedules(schedule.py)
 스케줄 조회	GET	/schedules	스케줄	all

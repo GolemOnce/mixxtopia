@@ -45,9 +45,14 @@
 - content	varchar(500)	내용
 - member	array<string>	멤버
 - link	varchar(200)	투표 링크
-- organizer	varchar(50)	주관
+- organizer	varchar(50)	주관(벅스/멜론/엠넷플러스/팬앤스타/빅크/쿠궁 등 투표 매체, enum 아닌 자유 텍스트)
 - start_at	TIMESTAMP	시작
 - end_at	TIMESTAMP	끝
+
+### 참고
+- schedules와 구조가 거의 동일(엔티티 구현도 동일 패턴)하나 category/location 없음
+- 등록/수정 시 start_at이 end_at보다 늦으면 400으로 거절
+- 목록 조회는 member/organizer 쿼리파라미터로 필터링, start_at 오름차순 정렬이 기본값
 
 ## schedules(schedule.py)
 - schedule_id	UUID	PK

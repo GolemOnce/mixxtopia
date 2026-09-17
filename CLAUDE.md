@@ -120,10 +120,14 @@ root
 
 ```bash
 # 백엔드 (경로: back-end/)
-.venv/Scripts/activate            # Windows. macOS/Linux는 .venv/bin/activate
+.venv/Scripts/activate            # Windows
+.venv/bin/activate                # macOS/Linux/WSL
+
 uvicorn app.main:app --reload
+
 # venv를 활성화해도 uvicorn을 못 찾으면(예: CI/CD 스크립트):
-.venv/Scripts/Python.exe -m uvicorn app:app --reload
+.venv/Scripts/Python.exe -m uvicorn app.main:app --reload   # Windows
+.venv/bin/python -m uvicorn app.main:app --reload           # macOS/Linux/WSL
 
 # 패키지 설치는 uv 사용 (pip보다 훨씬 빠름, pip 호환 — requirements.txt 그대로 사용)
 uv pip install -r requirements.txt

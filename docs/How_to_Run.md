@@ -4,14 +4,19 @@
 ## case 1.
 - 가상환경 실행 후 uvicorn으로 run
 ```
-.venv/Scripts/activate
+# 가상환경 실행
+.venv/Scripts/activate   # Windows
+.venv/bin/activate       # macOS/Linux/WSL
+
+# run
 uvicorn app.main:app --reload
 ``` 
 ## case 2.
 - 가상환경을 실행해도 uvicorn: command not found가 뜨는 경우
 - CI/CD/배포 스크립트에서 사용하는 경우
 ```
-.venv/Scripts/Python.exe -m uvicorn app.main:app --reload
+.venv/Scripts/Python.exe -m uvicorn app.main:app --reload   # Windows
+.venv/bin/python -m uvicorn app.main:app --reload           # macOS/Linux/WSL
 ```
 <br></br>
 

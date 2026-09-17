@@ -1,10 +1,15 @@
+import { Route, Routes } from 'react-router-dom'
+
 import AdminBustercall from './pages/AdminBustercall'
 import BusterCall from './pages/BusterCall'
+import Home from './pages/Home'
 
 export default function App() {
-  // TODO: react-router 등 정식 라우팅 도입 전까지의 임시 경로 분기
-  if (window.location.pathname === '/admin') {
-    return <AdminBustercall />
-  }
-  return <BusterCall />
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/bustercall" element={<BusterCall />} />
+      <Route path="/admin" element={<AdminBustercall />} />
+    </Routes>
+  )
 }

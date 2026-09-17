@@ -8,12 +8,19 @@
 토큰 재발급	POST	/auth/refresh	인증	admin,manager,user
 
 ## users(user.py)
-프로필 조회	GET	/users/{userId}	유저	admin,guest,user
-프로필 수정	PATCH	/users/{userId}	유저	admin,manager,owner
-차단	POST	/users/{userId}/block	유저	admin,manager,user
-차단 해제	DELETE	/users/{userId}/unblock	유저	admin,manager,user
-차단 목록	GET	/users/{userId}/blacklist	유저	admin,manager,owner
-신고	POST	/users/{userId}/report	유저	admin,manager,user
+프로필 조회	GET	/users/{user_id}	유저	admin,guest,user
+프로필 수정	PATCH	/users/{user_id}	유저	admin,manager,owner
+차단	POST	/users/{user_id}/block	유저	admin,manager,user
+차단 해제	DELETE	/users/{user_id}/unblock	유저	admin,manager,user
+차단 목록	GET	/users/{user_id}/blacklist	유저	admin,manager,owner
+신고	POST	/users/{user_id}/report	유저	admin,manager,user
+
+### 참고
+- path param은 bustercall의 `{phrases_id}`와 일관되게 snake_case(`{user_id}`) 사용(명세엔 camelCase로 적혀있었으나 통일함)
+- 프로필 조회는 인증 불필요(guest 포함 전체 공개), 닉네임만 반환(email 등 PII 비노출)
+- "owner"는 `app.core.deps.require_self_or_roles`로 구현 — path의 `user_id`와 본인이거나 admin/manager
+- 차단/차단해제는 "user"(로그인만 하면 누구나) 권한 — 자기 자신 차단은 400
+- 신고는 suggest 컬렉션에 `category=report_user`로 저장(신고 목록 조회는 suggests 도메인에서 구현 예정)
 
 ## votes(vote.py)
 투표 목록 조회	GET	/votes	투표	all

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 
-from app.core.deps import get_client_ip, get_current_user
+from app.core.deps import get_client_ip, get_current_user, require_self_or_roles
 from app.core.oauth import OAuthVerificationError
 from app.core.security import (
     REFRESH_TOKEN_COOKIE,
@@ -8,7 +8,7 @@ from app.core.security import (
     clear_auth_cookies,
     set_auth_cookies,
 )
-from app.model.user import User
+from app.model.user import User, UserRole
 from app.schemas.user import (
     AuthLoginRequest,
     AuthLoginResponse,
@@ -16,6 +16,12 @@ from app.schemas.user import (
     AuthRefreshResponse,
     AuthSignupRequest,
     AuthSignupResponse,
+    UserBlacklistResponse,
+    UserBlockResponse,
+    UserProfileResponse,
+    UserProfileUpdateRequest,
+    UserReportRequest,
+    UserReportResponse,
 )
 from app.service import user as user_service
 
@@ -97,3 +103,69 @@ async def refresh(request: Request, response: Response):
 
     set_auth_cookies(response, access_token, refresh_token)
     return AuthRefreshResponse(ok=True)
+
+
+@router.get("/{user_id}", response_model=UserProfileResponse)
+async def get_profile(user_id: str):
+    try:
+        user = await user_service.get_profile(user_id)
+    except user_service.UserNotFoundError as exc:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "존재하지 않는 사용자입니다.") from exc
+    return UserProfileResponse(user_id=str(user.user_id), nickname=user.nickname)
+
+
+@router.patch("/{user_id}", response_model=UserProfileResponse)
+async def update_profile(
+    user_id: str,
+    payload: UserProfileUpdateRequest,
+    current_user: User = Depends(require_self_or_roles(UserRole.admin, UserRole.manager)),
+):
+    try:
+        user = await user_service.update_profile(user_id, payload.nickname, current_user.user_id)
+    except user_service.UserNotFoundError as exc:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "존재하지 않는 사용자입니다.") from exc
+    return UserProfileResponse(user_id=str(user.user_id), nickname=user.nickname)
+
+
+@router.post("/{user_id}/block", response_model=UserBlockResponse)
+async def block_user(user_id: str, current_user: User = Depends(get_current_user)):
+    try:
+        await user_service.block_user(current_user.user_id, user_id)
+    except user_service.SelfActionNotAllowedError as exc:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "자기 자신은 차단할 수 없습니다.") from exc
+    except user_service.UserNotFoundError as exc:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "존재하지 않는 사용자입니다.") from exc
+    return UserBlockResponse(ok=True)
+
+
+@router.delete("/{user_id}/unblock", response_model=UserBlockResponse)
+async def unblock_user(user_id: str, current_user: User = Depends(get_current_user)):
+    await user_service.unblock_user(current_user.user_id, user_id)
+    return UserBlockResponse(ok=True)
+
+
+@router.get("/{user_id}/blacklist", response_model=UserBlacklistResponse)
+async def get_blacklist(
+    user_id: str,
+    _current_user: User = Depends(require_self_or_roles(UserRole.admin, UserRole.manager)),
+):
+    try:
+        blocked = await user_service.get_blacklist(user_id)
+    except user_service.UserNotFoundError as exc:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "존재하지 않는 사용자입니다.") from exc
+    return UserBlacklistResponse(blocked_user_ids=blocked)
+
+
+@router.post(
+    "/{user_id}/report", response_model=UserReportResponse, status_code=status.HTTP_201_CREATED
+)
+async def report_user(
+    user_id: str,
+    payload: UserReportRequest,
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        suggest = await user_service.report_user(current_user.user_id, user_id, payload)
+    except user_service.UserNotFoundError as exc:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "존재하지 않는 사용자입니다.") from exc
+    return UserReportResponse(suggest_id=str(suggest.suggest_id))

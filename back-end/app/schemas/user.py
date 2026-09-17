@@ -36,3 +36,29 @@ class AuthLogoutResponse(BaseModel):
 
 class AuthRefreshResponse(BaseModel):
     ok: bool
+
+
+class UserProfileResponse(BaseModel):
+    user_id: str
+    nickname: str
+
+
+class UserProfileUpdateRequest(BaseModel):
+    nickname: str = Field(min_length=1, max_length=8)
+
+
+class UserBlockResponse(BaseModel):
+    ok: bool
+
+
+class UserBlacklistResponse(BaseModel):
+    blocked_user_ids: list[str]
+
+
+class UserReportRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=100)
+    content: str = Field(min_length=1, max_length=1000)
+
+
+class UserReportResponse(BaseModel):
+    suggest_id: str

@@ -1,5 +1,7 @@
 from uuid import UUID, uuid4
 
+from pymongo import ReturnDocument
+
 from app.core.access_log import AccessLogAction, write_access_log
 from app.core.config import settings
 from app.core.oauth import fetch_oauth_email
@@ -12,8 +14,9 @@ from app.core.security import (
 )
 from app.database import redis_client
 from app.model.base import utcnow
+from app.model.suggest import Suggest, SuggestCategory, suggests_col
 from app.model.user import User, UserRole, users_col
-from app.schemas.user import AuthLoginRequest, AuthSignupRequest
+from app.schemas.user import AuthLoginRequest, AuthSignupRequest, UserReportRequest
 
 REFRESH_TOKEN_KEY = "refresh_token:{user_id}"
 
@@ -31,6 +34,10 @@ class UserAlreadyExistsError(Exception):
 
 
 class UserNotFoundError(Exception):
+    pass
+
+
+class SelfActionNotAllowedError(Exception):
     pass
 
 
@@ -113,3 +120,64 @@ async def refresh(refresh_token: str) -> tuple[UUID, str, str]:
 
     new_access_token = create_access_token(user_id, doc["role"])
     return user_id, new_access_token, refresh_token
+
+
+async def get_profile(user_id: str) -> User:
+    doc = await users_col.find_one({"_id": user_id, "deleted_at": None})
+    if not doc:
+        raise UserNotFoundError()
+    return User.from_doc(doc)
+
+
+async def update_profile(user_id: str, nickname: str, actor_id: UUID) -> User:
+    doc = await users_col.find_one_and_update(
+        {"_id": user_id, "deleted_at": None},
+        {"$set": {"nickname": nickname, "updated_at": utcnow(), "updated_by": str(actor_id)}},
+        return_document=ReturnDocument.AFTER,
+    )
+    if not doc:
+        raise UserNotFoundError()
+    return User.from_doc(doc)
+
+
+async def block_user(actor_id: UUID, target_id: str) -> None:
+    if str(actor_id) == target_id:
+        raise SelfActionNotAllowedError()
+
+    target = await users_col.find_one({"_id": target_id, "deleted_at": None})
+    if not target:
+        raise UserNotFoundError()
+
+    await users_col.update_one(
+        {"_id": str(actor_id)}, {"$addToSet": {"blocked_user_ids": target_id}}
+    )
+
+
+async def unblock_user(actor_id: UUID, target_id: str) -> None:
+    await users_col.update_one({"_id": str(actor_id)}, {"$pull": {"blocked_user_ids": target_id}})
+
+
+async def get_blacklist(user_id: str) -> list[str]:
+    doc = await users_col.find_one({"_id": user_id, "deleted_at": None})
+    if not doc:
+        raise UserNotFoundError()
+    return doc.get("blocked_user_ids", [])
+
+
+async def report_user(reporter_id: UUID, target_id: str, payload: UserReportRequest) -> Suggest:
+    target = await users_col.find_one({"_id": target_id, "deleted_at": None})
+    if not target:
+        raise UserNotFoundError()
+
+    suggest = Suggest(
+        suggest_id=uuid4(),
+        category=SuggestCategory.report_user,
+        title=payload.title,
+        content=payload.content,
+        target_id=target_id,
+        created_by=reporter_id,
+    )
+    doc = suggest.model_dump(mode="json")
+    doc["_id"] = doc.pop("suggest_id")
+    await suggests_col.insert_one(doc)
+    return suggest

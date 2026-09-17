@@ -35,3 +35,14 @@ def require_roles(*roles: UserRole):
         return current_user
 
     return _dependency
+
+
+def require_self_or_roles(*roles: UserRole):
+    """path param `user_id`와 본인이거나, roles 중 하나여야 통과(owner-or-role 패턴)."""
+
+    async def _dependency(user_id: str, current_user: User = Depends(get_current_user)) -> User:
+        if str(current_user.user_id) == user_id or current_user.role in roles:
+            return current_user
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "권한이 없습니다.")
+
+    return _dependency

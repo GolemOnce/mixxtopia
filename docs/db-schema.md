@@ -1,6 +1,5 @@
 # 테이블 명세서
 - BaseEntity 모든 테이블에 적용
-  - phrases, record, suggest 제외
 - 기본적으로 soft delete 방식, 조회 시 deleted_at 체크 필수
 
 ## BaseEntity
@@ -82,7 +81,8 @@
 - 특정 게시글 조회 시, 해당 게시글의 모든 댓글(대댓글 포함) DB 쿼리 레벨에서 페이지네이션, 답글 트리 조립은 그 페이지 안에서만(최상위 댓글(최신순/등록순 브라우저에서 선택 가능) 기준으로 20개 페이지네이션하고, 그 댓글들의 답글도 통째로 같이 가져오는 방식)
   - 답글이 있는 댓글의 경우 "답글 n개"로 댓글 아래 표시 후, "답글 n개"를 누르면 답글 렌더링 
 
-## phrases(bustercall.py, 총공문구)
+## phrases(bustercall.py, 총공문구 + 집계)
+- BaseEntity 적용(phrases_id는 PK 역할, Mongo `_id`에 문자열로 그대로 사용 — users와 동일 패턴)
 - phrases_id	UUID	PK
 - category	enum	총공 종류(컴백, 생일, n주년)
 - detail varchar(16) 총공 종류 상세
@@ -91,28 +91,22 @@
 - fixed2	varchar(50)	고정문구1(해시태그, 본문 2번째줄)
 - fixed4	varchar(50)	고정문구2(해시태그, 본문 4번째줄)
 - is_current	boolean	현재 진행 중인 캠페인
+- total_clicks	integer	NULLABLE	총 클릭 수(sync 시점 집계)
+- unique_clients	integer	NULLABLE	이용자 수(sync 시점 집계)
+- synced_at	TIMESTAMP	NULLABLE	캠페인 종료(sync) 시점
 
 ### 참고
 - category enum (컴백(comeback), 생일(birthday), n주년(anniversary))
 - detail 컴백의 경우 "곡 이름"(예_Heavy Seranade), 생일은 "YYYY"(예_2026), n주년은 "n"(예_5)
-- db에서 "mixxpia" Database의 "phrases" 컬렉션에서 category와 detail조합으로
+- db에서 "mixxtopia" Database의 "phrases" 컬렉션에서 category와 detail조합으로
 - member는 생일일 경우 단일 멤버 이름(lily, haewon, sullyoon, bae, jiwoo, kyujin)으로, 컴백이나 n주년은 nmixx로 구분.
 - 유동문구1+고정문구1+유동문구2+고정문구2+유동문구3 으로 조합됨(app.service.bustercall의 get_phrases)
-- is_current는 최초 명세에 없던 필드로, 관리자가 `POST /bustercall/campaign`으로 총공 종류(category)+상세(detail)를 선택하면 해당 (category, detail) 문서를 upsert하고 is_current=true, 나머지는 false로 전환하기 위해 추가함. (category, detail) 조합에 unique index
-- `GET /bustercall/reroll`은 is_current=true 문서를 조회하며, Redis(`hashtag:phrases`)에 캐싱해 매 요청마다 Mongo를 조회하지 않음. `POST /bustercall/campaign`이 전환 시점에 캐시도 함께 갱신(write-through)
-- 기존 "hashtag" Mongo DB(레거시 총공 DB)는 더 이상 쓰지 않고 mixxtopia DB의 phrases 컬렉션으로 통합함
-
-## record(record.py, 총공 집계 로그)
-- record_id	UUID	PK
-- phrases_id	UUID	총공문구id(phrases_id 참조)
-- total_clicks	integer	총 클릭 수
-- unique_clients	integer	이용자 수
-- created_at	TIMESTAMP	캠페인 종료(sync) 시점
-
-### 참고
-- 총공은 1회성 캠페인(한 번에 하나만 진행, 겹치지 않음)이라 Redis 카운터는 전역 키 사용
-- 캠페인 종료 시 관리자가 POST /bustercall/sync 호출 → Redis 값을 record에 insert 후 리셋
-- phrases_id별로 여러 row가 쌓일 수 있음(캠페인마다 1건씩 로그)
+- is_current는 최초 명세에 없던 필드로, 관리자가 캠페인을 등록/전환하면 해당 문서만 is_current=true, 나머지는 false로 내리기 위해 추가함
+- (category, detail, member) 조합에 unique index(partial, deleted_at:None인 문서끼리만) — member까지 포함해야 같은 해에 생일인 멤버가 둘 이상이어도 서로 다른 캠페인으로 구분됨(category+detail만으로는 충돌). soft delete 후엔 같은 조합으로 재등록 가능
+- `GET /bustercall/reroll`은 is_current=true 문서를 조회하며, Redis(`hashtag:phrases`)에 캐싱해 매 요청마다 Mongo를 조회하지 않음. 캠페인 등록/수정/삭제 시 캐시도 함께 갱신(write-through)
+- 기존 "hashtag" Mongo DB(레거시 총공 DB)는 더 이상 쓰지 않고 mixxtopia DB의 phrases 컬렉션으로 통합함(레거시로 이관된 기존 문서 1건은 BaseEntity 필드 없이 그대로 둠 — 더 이상 수정될 일 없는 데이터라 소급 반영 안 함)
+- 원래 별도 컬렉션이었던 record(총공 집계 로그)를 여기로 통합함 — 캠페인당 문서가 1개뿐이라 분리 실익이 적었음. 단, 같은 캠페인을 여러 번 재실행(sync)하면 total_clicks/unique_clients/synced_at은 최신 값으로 덮어써지고 과거 회차별 집계 이력은 남지 않음(필요해지면 별도 로그로 재분리)
+- 관리자 페이지의 "기존 캠페인 목록(최신순)" 조회는 updated_at 기준 정렬. 프론트에는 created_by/updated_by/deleted_by를 노출하지 않음(내부 감사용)
 
 ## suggest(suggest.py, 건의함)
 - suggest_id    UUID    PK

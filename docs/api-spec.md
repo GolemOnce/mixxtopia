@@ -31,10 +31,18 @@
 
 ## schedules(schedule.py)
 스케줄 조회	GET	/schedules	스케줄	all
-스케줄 상세 조회	GET	/schedules/{scheduleId}	스케줄	all
+스케줄 상세 조회	GET	/schedules/{schedule_id}	스케줄	all
 스케줄 등록	POST	/schedules	스케줄	admin,manager
-스케줄 수정	PATCH	/schedules/{scheduleId}	스케줄	admin,manager
-스케줄 삭제	DELETE	/schedules/{scheduleId}	스케줄	admin,manager
+스케줄 수정	PATCH	/schedules/{schedule_id}	스케줄	admin,manager
+스케줄 삭제	DELETE	/schedules/{schedule_id}	스케줄	admin,manager
+
+### 참고
+- `GET /schedules`는 쿼리파라미터 `category`, `member`로 필터링 가능. 기본 정렬은 `start_at` 오름차순
+- "지난 일정 숨기기" 같은 필터는 아직 없음 — 달력/게시판 형태 화면을 실제로 만들 때 필요한 형태(날짜 범위 등)로 다시 추가 예정
+- category enum: broadcast(방송출연), award(시상식), festival(음악축제), concert(콘서트), fanmeeting(팬미팅), fansign(팬싸인회), etc(기타)
+- 등록/수정 시 start_at > end_at이면 400
+- 삭제는 soft delete(BaseEntity의 deleted_at)
+- "합법적으로 공개된 스케줄만" 정책은 코드로 검증할 수 없는 항목이라(비공식 루머 여부 판단 불가) admin/manager만 쓸 수 있게 하는 권한 제한 + 운영 정책으로 지킴
 
 ## photos(photo.py)
 사진 목록 조회	GET	/photos	사진	all

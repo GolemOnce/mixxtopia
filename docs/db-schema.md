@@ -18,11 +18,15 @@
 - role	enum	인가 등급(admin, manager, user)
 - terms_agreed_at	TIMESTAMP	서비스 이용약관 동의 시각
 - privacy_agreed_at	TIMESTAMP	개인정보 수집·이용 동의 시각
+- blocked_user_ids	array<UUID>	이 유저가 차단한 유저 id 목록
 
 ### 참고
-- role, terms_agreed_at, privacy_agreed_at은 최초 명세에는 없었으나, CLAUDE.md의 인가(role 기반 권한 분기)·필수 약관 동의 서명 요구사항 구현을 위해 auth API 구현 시 추가함
+- role, terms_agreed_at, privacy_agreed_at, blocked_user_ids는 최초 명세에는 없었으나, CLAUDE.md의 인가(role 기반 권한 분기)·필수 약관 동의 서명·차단 API 요구사항 구현을 위해 추가함
 - (oauth, email) 조합에 unique index. Gmail/Naver 로그인 시 프론트가 받은 provider access token을 백엔드가 provider의 userinfo API로 검증해 이메일을 얻고, 이 조합으로 기존 회원을 조회함 — 즉 email은 OAuth 재로그인 매칭의 실질적 키이므로 회원가입 시 provider가 이메일을 내려주지 않으면(이메일 동의 거부 등) 가입 실패 처리
 - _id(Mongo PK)에 user_id(UUID)를 문자열로 그대로 사용(중복 저장 방지)
+- 차단은 별도 컬렉션 없이 유저 문서에 배열로 직접 관리(개인 차단목록이라 규모가 작음). 자기 자신 차단은 400으로 거절
+- `GET/PATCH /users/{user_id}`는 프로필 조회/수정 — 조회는 인증 불필요(비로그인 포함 전체 공개), 수정은 본인 또는 admin/manager만(`require_self_or_roles`)
+- 신고(`POST /users/{user_id}/report`)는 suggest 컬렉션에 `category=report_user`로 저장 — 아래 suggest 참고
 
 ## access_logs(신규, 접속기록)
 - user_id	UUID	접속한 사용자(users_id 참조)
@@ -110,10 +114,17 @@
 
 ## suggest(suggest.py, 건의함)
 - suggest_id    UUID    PK
+- category enum varchar(20) 건의 종류
 - title varchar(100)    제목
 - content varchar(1000) 내용
 - email varchar(200) 피드백 받을 이메일
 - status enum(pending, read, done) 처리상태
+- target_id UUID NULLABLE 신고 대상 id(유저/게시글 등)
 
 ### 참고
 - 관리자 전용 페이지에서 조회
+- 신고/건의를 category로 구분해서 한 번에 관리
+  - bustercall(phrases), photo, post, comment, schedule, user, vote 모두 해당
+- target_id는 최초 명세에 없던 필드로, report_* 카테고리일 때 신고 대상을 남기기 위해 추가함(건의는 None)
+- category는 `app/model/suggest.py`의 `SuggestCategory`(suggestion, report_user, report_post, report_comment, report_photo, report_schedule, report_vote, report_bustercall)로 구현됨
+- 지금은 `POST /users/{user_id}/report`(category=report_user)만 구현됨. 목록 조회/처리완료(GET·POST /suggests)와 다른 도메인 신고는 suggests 도메인 자체를 만들 때 이어서 구현 예정

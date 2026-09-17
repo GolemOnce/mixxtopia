@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.access_log import ensure_indexes as ensure_access_log_indexes
 from app.core.config import settings
 from app.model.bustercall import ensure_indexes as ensure_bustercall_indexes
+from app.model.schedule import ensure_indexes as ensure_schedule_indexes
 from app.model.suggest import ensure_indexes as ensure_suggest_indexes
 from app.model.user import ensure_indexes as ensure_user_indexes
 from app.router import bustercall, photo, post, schedule, user, vote
@@ -33,3 +34,4 @@ async def on_startup():
     await ensure_access_log_indexes()
     await ensure_bustercall_indexes()
     await ensure_suggest_indexes()
+    await ensure_schedule_indexes()

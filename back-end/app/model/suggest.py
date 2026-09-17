@@ -39,10 +39,16 @@ class Suggest(BaseEntity):
     category: SuggestCategory
     title: str = Field(min_length=1, max_length=100)
     content: str = Field(min_length=1, max_length=1000)
-    email: str | None = None
+    email: str | None = Field(default=None, max_length=200)
     status: SuggestStatus = SuggestStatus.pending
     target_id: str | None = None
+
+    @classmethod
+    def from_doc(cls, doc: dict) -> "Suggest":
+        return cls(**{**doc, "suggest_id": UUID(doc["_id"])})
 
 
 async def ensure_indexes() -> None:
     await suggests_col.create_index("created_at")
+    await suggests_col.create_index("status")
+    await suggests_col.create_index("category")

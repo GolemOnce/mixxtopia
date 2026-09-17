@@ -10,7 +10,7 @@ from app.model.schedule import ensure_indexes as ensure_schedule_indexes
 from app.model.suggest import ensure_indexes as ensure_suggest_indexes
 from app.model.user import ensure_indexes as ensure_user_indexes
 from app.model.vote import ensure_indexes as ensure_vote_indexes
-from app.router import bustercall, comment, photo, post, schedule, user, vote
+from app.router import bustercall, comment, photo, post, schedule, suggest, user, vote
 
 app = FastAPI()
 
@@ -29,6 +29,7 @@ app.include_router(schedule.router)
 app.include_router(vote.router)
 app.include_router(post.router)
 app.include_router(comment.router)
+app.include_router(suggest.router)
 app.include_router(photo.router)
 
 

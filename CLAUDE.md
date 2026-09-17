@@ -22,9 +22,9 @@ NMIXX(또는 추후 타 아티스트 추가 가능) 팬을 위한 덕질 도구 
 - 트위터(X) 총공(해시태그 챌린지) 페이지 — **이미 구현되어 있음**
 
 ## 배포/인프라
-- EC2 t3.micro 현재 사용 중, 병목시 t3.small 등으로 업그레이드
-- IaC(terraform)으로 인프라 관리(초기 상태 : IaC없이 EC2 내에 api 몇개 들어간 1페이지 규모 nginx로 서빙 중)
-- Docker-Compose를 활용해 어플리케이션과 nginx, Redis를 구동하고, MongoDB는 기존의 Atlas 활용
+- IaC(terraform)로 인프라 관리(초기 상태 : IaC없이 EC2 내에 api 몇개 들어간 1페이지 규모 nginx로 서빙 중)
+  - EC2 t3.small 사용 중
+  - Docker-Compose를 활용해 하나의 인스턴스(EC2 t3.small)에 어플리케이션과 nginx, Redis를 구동하고, MongoDB는 기존에 설정된 Atlas 그대로 활용
 
 ## 기능 구현 및 코드 컨벤션
 

@@ -53,12 +53,17 @@
 총공 현황 조회	GET	/api/bustercall/stats	총공	all
 
 ### 관리자 전용
-총공 캠페인 등록/전환	POST	/api/bustercall/campaign	총공	admin,manager
+총공 캠페인 목록 조회	GET	/api/bustercall/campaigns	총공	admin,manager
+총공 캠페인 신규 등록	POST	/api/bustercall/campaigns	총공	admin,manager
+총공 캠페인 수정/전환	PATCH	/api/bustercall/campaigns/{phrases_id}	총공	admin,manager
 
 ### 참고
 - 총공은 1회성 캠페인(한 번에 하나만 진행)이라 phrases 문서 중 `is_current: true`인 것만 사용
-- `POST /bustercall/campaign`은 category+detail을 키로 upsert하고, 기존 캠페인은 is_current=false로 내림(전환). 별도의 목록/수정/삭제 endpoint는 아직 없음(필요해지면 추가)
+- `POST /api/bustercall/campaigns`는 (category, detail, member) 조합이 이미 있으면 409로 거절(실수로 기존 캠페인 덮어쓰기 방지) — 새 문서를 만들고 is_current=true로, 기존 캠페인들은 false로 전환
+- `PATCH /api/bustercall/campaigns/{phrases_id}`는 기존 캠페인의 문구 내용(pairs/fixed2/fixed4)만 수정하고 is_current=true로 전환. category/detail/member(식별자)는 변경 불가 — 바꾸려면 새로 등록
+- 관리자 페이지는 `GET /api/bustercall/campaigns`로 최신순 목록을 보여주고, 그중 하나를 선택하면 문구가 폼에 자동으로 채워짐(수정용), "새로 만들기"를 선택하면 빈 폼(신규 등록용)
 
 ## suggests(suggest.py)
 건의 조회	GET	/suggests	건의함	admin,manager
 건의 작성	POST	/suggests	건의함	admin,manager,user
+건의 처리 완료   POST    /suggests/{suggest_id}  건의함  admin, manager

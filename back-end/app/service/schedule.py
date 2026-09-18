@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 from pymongo import ReturnDocument
 
 from app.model.base import utcnow
-from app.model.schedule import Schedule, ScheduleCategory, schedules_col
+from app.model.schedule import Schedule, schedules_col
 from app.schemas.schedule import ScheduleCreateRequest, ScheduleUpdateRequest
 
 
@@ -16,12 +16,12 @@ class InvalidTimeRangeError(Exception):
 
 
 async def list_schedules(
-    category: ScheduleCategory | None = None,
+    category: str | None = None,
     member: str | None = None,
 ) -> list[dict]:
     query: dict = {"deleted_at": None}
     if category is not None:
-        query["category"] = category.value
+        query["category"] = category
     if member is not None:
         query["member"] = member
 

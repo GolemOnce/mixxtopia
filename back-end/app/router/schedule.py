@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.deps import require_roles
-from app.model.schedule import ScheduleCategory
 from app.model.user import User, UserRole
 from app.schemas.schedule import ScheduleCreateRequest, ScheduleResponse, ScheduleUpdateRequest
 from app.service import schedule as schedule_service
@@ -26,7 +25,7 @@ def _to_response(doc: dict) -> ScheduleResponse:
 
 @router.get("", response_model=list[ScheduleResponse])
 async def list_schedules(
-    category: ScheduleCategory | None = None,
+    category: str | None = None,
     member: str | None = None,
 ):
     docs = await schedule_service.list_schedules(category=category, member=member)

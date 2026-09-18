@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 from app.core.access_log import AccessLogAction, write_access_log
 from app.model.base import utcnow
 from app.model.comment import Comment, comments_col
-from app.model.post import posts_col
+from app.model.post import PostCategory, posts_col
 from app.model.user import User, UserRole
 from app.schemas.comment import CommentCreateRequest
 
@@ -22,18 +22,21 @@ class ForbiddenError(Exception):
     pass
 
 
-async def _assert_post_exists(post_id: str) -> None:
-    if not await posts_col.find_one({"_id": post_id, "deleted_at": None}):
+async def _assert_post_visible(post_id: str, is_privileged: bool) -> None:
+    post = await posts_col.find_one({"_id": post_id, "deleted_at": None})
+    if not post:
         raise PostNotFoundError()
+    if post["category"] == PostCategory.suggestion.value and not is_privileged:
+        raise ForbiddenError()
 
 
 async def list_comments(
-    post_id: str, sort: str, page: int, page_size: int
+    post_id: str, sort: str, page: int, page_size: int, is_privileged: bool
 ) -> tuple[list[dict], dict[str, list[dict]], int]:
     """soft-delete된 댓글도 답글 스레드가 끊기지 않도록 조회 자체는 필터링하지 않고,
     표시(placeholder 처리)는 라우터에서 담당한다."""
 
-    await _assert_post_exists(post_id)
+    await _assert_post_visible(post_id, is_privileged)
 
     query = {"post_id": post_id, "parent_id": None}
     total = await comments_col.count_documents(query)
@@ -59,7 +62,8 @@ async def list_comments(
 async def create_comment(
     post_id: str, payload: CommentCreateRequest, author: User, ip: str
 ) -> dict:
-    await _assert_post_exists(post_id)
+    is_privileged = author.role in (UserRole.admin, UserRole.manager)
+    await _assert_post_visible(post_id, is_privileged)
 
     actual_parent_id = None
     mention_to = None

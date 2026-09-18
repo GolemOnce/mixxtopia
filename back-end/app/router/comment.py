@@ -1,11 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from app.core.deps import get_client_ip, get_current_user
-from app.model.user import User
+from app.core.deps import get_client_ip, get_current_user, get_current_user_optional
+from app.model.user import User, UserRole
 from app.schemas.comment import CommentCreateRequest, CommentListResponse, CommentResponse
 from app.service import comment as comment_service
 
 router = APIRouter(prefix="/api/comments", tags=["comment"])
+
+
+def _is_privileged(current_user: User | None) -> bool:
+    return current_user is not None and current_user.role in (UserRole.admin, UserRole.manager)
 
 
 def _to_response(doc: dict, replies: list[CommentResponse]) -> CommentResponse:
@@ -24,13 +28,23 @@ def _to_response(doc: dict, replies: list[CommentResponse]) -> CommentResponse:
 
 
 @router.get("/{post_id}", response_model=CommentListResponse)
-async def list_comments(post_id: str, sort: str = "asc", page: int = 1, page_size: int = 20):
+async def list_comments(
+    post_id: str,
+    sort: str = "asc",
+    page: int = 1,
+    page_size: int = 20,
+    current_user: User | None = Depends(get_current_user_optional),
+):
     try:
         top_level, replies_by_parent, total = await comment_service.list_comments(
-            post_id, sort, page, page_size
+            post_id, sort, page, page_size, _is_privileged(current_user)
         )
     except comment_service.PostNotFoundError as exc:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "게시글을 찾을 수 없습니다.") from exc
+    except comment_service.ForbiddenError as exc:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, "건의글은 관리자만 조회할 수 있습니다."
+        ) from exc
 
     items = [
         _to_response(
@@ -56,6 +70,10 @@ async def create_comment(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "게시글을 찾을 수 없습니다.") from exc
     except comment_service.CommentNotFoundError as exc:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "부모 댓글을 찾을 수 없습니다.") from exc
+    except comment_service.ForbiddenError as exc:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, "건의글은 관리자만 조회할 수 있습니다."
+        ) from exc
     return _to_response(doc, [])
 
 

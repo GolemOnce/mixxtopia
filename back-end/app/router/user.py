@@ -1,6 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 
-from app.core.deps import get_client_ip, get_current_user, require_self_or_roles
+from app.core.deps import (
+    get_client_ip,
+    get_current_user,
+    get_current_user_optional,
+    require_self_or_roles,
+)
 from app.core.oauth import OAuthVerificationError
 from app.core.security import (
     REFRESH_TOKEN_COOKIE,
@@ -13,6 +18,7 @@ from app.schemas.user import (
     AuthLoginRequest,
     AuthLoginResponse,
     AuthLogoutResponse,
+    AuthMeResponse,
     AuthRefreshResponse,
     AuthSignupRequest,
     AuthSignupResponse,
@@ -103,6 +109,18 @@ async def refresh(request: Request, response: Response):
 
     set_auth_cookies(response, access_token, refresh_token)
     return AuthRefreshResponse(ok=True)
+
+
+@auth_router.get("/me", response_model=AuthMeResponse)
+async def get_me(current_user: User | None = Depends(get_current_user_optional)):
+    if current_user is None:
+        return AuthMeResponse(logged_in=False)
+    return AuthMeResponse(
+        logged_in=True,
+        user_id=str(current_user.user_id),
+        nickname=current_user.nickname,
+        role=current_user.role,
+    )
 
 
 @router.get("/{user_id}", response_model=UserProfileResponse)

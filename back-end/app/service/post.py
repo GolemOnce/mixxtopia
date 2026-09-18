@@ -40,11 +40,13 @@ def _can_modify(doc: dict, actor: User) -> bool:
 
 
 async def list_posts(
-    category: PostCategory | None, page: int, page_size: int
+    category: PostCategory | None, page: int, page_size: int, exclude_suggestion: bool
 ) -> tuple[list[dict], int]:
     query: dict = {"deleted_at": None}
     if category is not None:
         query["category"] = category.value
+    elif exclude_suggestion:
+        query["category"] = {"$ne": PostCategory.suggestion.value}
 
     total = await posts_col.count_documents(query)
     skip = (page - 1) * page_size

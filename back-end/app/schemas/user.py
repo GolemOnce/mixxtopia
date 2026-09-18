@@ -38,6 +38,13 @@ class AuthRefreshResponse(BaseModel):
     ok: bool
 
 
+class AuthMeResponse(BaseModel):
+    logged_in: bool
+    user_id: str | None = None
+    nickname: str | None = None
+    role: UserRole | None = None
+
+
 class UserProfileResponse(BaseModel):
     user_id: str
     nickname: str

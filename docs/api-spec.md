@@ -44,7 +44,7 @@
 ### 참고
 - `GET /schedules`는 쿼리파라미터 `category`, `member`로 필터링 가능. 기본 정렬은 `start_at` 오름차순
 - "지난 일정 숨기기" 같은 필터는 아직 없음 — 달력/게시판 형태 화면을 실제로 만들 때 필요한 형태(날짜 범위 등)로 다시 추가 예정
-- category enum: broadcast(방송출연), award(시상식), festival(음악축제), concert(콘서트), fanmeeting(팬미팅), fansign(팬싸인회), etc(기타)
+- category는 enum이 아니라 자유 문자열(자세한 사유는 db-schema.md 참고) — broadcast/award/festival/concert/fanmeeting/fansign/etc 등은 자동완성용 기본값일 뿐, 새 값도 그대로 등록 가능
 - 등록/수정 시 start_at > end_at이면 400
 - 삭제는 soft delete(BaseEntity의 deleted_at)
 - "합법적으로 공개된 스케줄만" 정책은 코드로 검증할 수 없는 항목이라(비공식 루머 여부 판단 불가) admin/manager만 쓸 수 있게 하는 권한 제한 + 운영 정책으로 지킴
@@ -65,6 +65,7 @@
 ### 참고
 - `GET /posts`는 쿼리파라미터 `category`, `page`, `page_size`(기본 20)로 필터링/페이지네이션. `created_at` 내림차순(최신순) 정렬
 - category(notice/free/question/suggestion) 중 notice(공지)는 admin/manager만 작성 가능(그 외 카테고리는 로그인한 모든 role)
+- suggestion(건의) 카테고리는 admin/manager만 조회 가능(CLAUDE.md "건의글은 관리자만 조회 가능") — `category=suggestion`으로 명시 필터링하면 비관리자는 403, 필터 없는 전체 목록에서는 자동으로 제외되고, 상세 조회도 403. `GET /comments/{post_id}`·`POST /comments/{post_id}`도 대상 게시글이 건의글이면 동일하게 막힘(비로그인 포함 `app.core.deps.get_current_user_optional`로 판별)
 - "owner"는 서비스 레벨에서 `post.author_id == 로그인한 유저`로 판단(admin/manager는 무조건 통과)
 - 작성 시점 IP를 access_logs에 기록(`action=post_create`)
 - category는 변경 불가(PATCH 대상에서 제외) — post_num이 category별로 매겨지므로 카테고리 이동은 새 글 작성으로 처리

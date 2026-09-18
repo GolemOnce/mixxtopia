@@ -59,7 +59,7 @@
 - title	varchar(100)	제목
 - content	varchar(500)	내용
 - member	array<string>	멤버
-- category	enum	스케줄 종류
+- category	varchar(20)	스케줄 종류
 - link	varchar(200)	관련 링크
 - organizer	varchar(50)	주관
 - location	varchar(50) 장소
@@ -68,7 +68,8 @@
 
 ### 참고
 - link의 설명이 원래 "투표 링크"로 되어있었는데 votes 테이블에서 복사하며 생긴 오타로 보여 "관련 링크"로 정정함(필드 자체는 그대로)
-- category enum은 `app/model/schedule.py`의 `ScheduleCategory`(broadcast, award, festival, concert, fanmeeting, fansign, etc)로 구현 — CLAUDE.md의 스케줄표 설명(방송출연/시상식/음악축제/콘서트/팬미팅/팬싸)을 그대로 매핑, 분류 안 되는 경우를 위해 etc 추가
+- category는 원래 고정 enum(`ScheduleCategory`: broadcast, award, festival, concert, fanmeeting, fansign, etc)이었으나 자유 문자열로 완화함 — 새 스케줄 종류가 생길 때마다 코드 배포가 필요해지는 문제가 있었고, votes.organizer처럼 이 값에 따라 분기하는 로직이 없어(권한이 갈리는 posts.category와 다름) enum으로 강제할 실익이 없다고 판단
+- 기존 값들은 `app/model/schedule.py`의 `SUGGESTED_SCHEDULE_CATEGORIES`에 자동완성 힌트로만 남겨둠(검증에는 안 쓰임). 프론트는 기존에 등록된 값 + 이 힌트를 합쳐 `<datalist>`로 자동완성 제공, 새 값도 자유롭게 입력 가능
 - 등록/수정 시 start_at이 end_at보다 늦으면 400으로 거절
 - 목록 조회는 category/member 쿼리파라미터로 필터링, start_at 오름차순 정렬이 기본값. "지난 일정 숨기기" 필터는 실제 달력/게시판 화면 만들 때 필요한 형태로 다시 추가 예정(빼둠)
 

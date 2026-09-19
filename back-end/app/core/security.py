@@ -21,11 +21,10 @@ class InvalidTokenError(Exception):
     pass
 
 
-def create_access_token(user_id: UUID, role: str) -> str:
+def create_access_token(user_id: UUID) -> str:
     now = datetime.now(timezone.utc)
     payload = {
         "sub": str(user_id),
-        "role": role,
         "type": TokenType.access.value,
         "iat": now,
         "exp": now + timedelta(minutes=settings.access_token_expire_minutes),

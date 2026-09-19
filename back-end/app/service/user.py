@@ -41,8 +41,8 @@ class SelfActionNotAllowedError(Exception):
     pass
 
 
-async def _issue_tokens(user_id: UUID, role: UserRole) -> tuple[str, str]:
-    access_token = create_access_token(user_id, role.value)
+async def _issue_tokens(user_id: UUID) -> tuple[str, str]:
+    access_token = create_access_token(user_id)
     refresh_token = create_refresh_token(user_id)
     await redis_client.set(
         REFRESH_TOKEN_KEY.format(user_id=user_id),
@@ -82,7 +82,7 @@ async def signup(payload: AuthSignupRequest, ip: str) -> tuple[User, str, str]:
     await users_col.insert_one(doc)
     await write_access_log(user_id, ip, AccessLogAction.signup)
 
-    access_token, refresh_token = await _issue_tokens(user_id, user.role)
+    access_token, refresh_token = await _issue_tokens(user_id)
     return user, access_token, refresh_token
 
 
@@ -98,7 +98,7 @@ async def login(payload: AuthLoginRequest) -> tuple[User, str, str]:
         raise UserNotFoundError()
 
     user = User.from_doc(doc)
-    access_token, refresh_token = await _issue_tokens(user.user_id, user.role)
+    access_token, refresh_token = await _issue_tokens(user.user_id)
     return user, access_token, refresh_token
 
 
@@ -118,7 +118,7 @@ async def refresh(refresh_token: str) -> tuple[UUID, str, str]:
     if not doc:
         raise InvalidTokenError("user not found")
 
-    new_access_token = create_access_token(user_id, doc["role"])
+    new_access_token = create_access_token(user_id)
     return user_id, new_access_token, refresh_token
 
 

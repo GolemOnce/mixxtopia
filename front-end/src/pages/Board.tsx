@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { api, authErrorMessage } from '../api/client'
 import { useCurrentUser } from '../auth/useCurrentUser'
-
-type Category = 'notice' | 'free' | 'question' | 'suggestion'
+import { formatDate } from '../lib/date'
+import { POST_CATEGORIES, POST_CATEGORY_LABELS, type PostCategory } from '../lib/postCategories'
 
 interface PostItem {
   post_id: string
   post_num: number
   author: string
-  category: Category
+  category: PostCategory
   title: string
   content: string
   created_at: string
@@ -24,40 +24,23 @@ interface PostListResponse {
   page_size: number
 }
 
-const CATEGORY_LABELS: Record<Category, string> = {
-  notice: '공지',
-  free: '자유',
-  question: '질문',
-  suggestion: '건의',
-}
-
-const CATEGORIES: Category[] = ['notice', 'free', 'question', 'suggestion']
 const PAGE_SIZE = 20
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' })
-}
-
 export default function Board() {
+  const navigate = useNavigate()
   const { isAdmin } = useCurrentUser()
-  const filterCategories = isAdmin ? CATEGORIES : CATEGORIES.filter((c) => c !== 'suggestion')
-  const writableCategories = isAdmin ? CATEGORIES : CATEGORIES.filter((c) => c !== 'notice')
+  const filterCategories = isAdmin
+    ? POST_CATEGORIES
+    : POST_CATEGORIES.filter((c) => c !== 'suggestion')
 
-  const [categoryFilter, setCategoryFilter] = useState<Category | ''>('')
+  const [categoryFilter, setCategoryFilter] = useState<PostCategory | ''>('')
   const [page, setPage] = useState(1)
   const [posts, setPosts] = useState<PostItem[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [listError, setListError] = useState<string | null>(null)
 
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [category, setCategory] = useState<Category>('free')
-  const [submitting, setSubmitting] = useState(false)
-  const [formError, setFormError] = useState<string | null>(null)
-  const [formSuccess, setFormSuccess] = useState<string | null>(null)
-
-  async function loadPosts(cat: Category | '', p: number) {
+  async function loadPosts(cat: PostCategory | '', p: number) {
     setLoading(true)
     setListError(null)
     try {
@@ -79,27 +62,9 @@ export default function Board() {
     loadPosts(categoryFilter, page)
   }, [categoryFilter, page])
 
-  function handleCategoryFilterChange(value: Category | '') {
+  function handleCategoryFilterChange(value: PostCategory | '') {
     setCategoryFilter(value)
     setPage(1)
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setFormError(null)
-    setFormSuccess(null)
-    setSubmitting(true)
-    try {
-      await api.post('/api/posts', { category, title, content })
-      setFormSuccess('게시글을 등록했습니다.')
-      setTitle('')
-      setContent('')
-      await loadPosts(categoryFilter, page)
-    } catch (err) {
-      setFormError(authErrorMessage(err, '요청 중 오류가 발생했습니다.'))
-    } finally {
-      setSubmitting(false)
-    }
   }
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
@@ -107,6 +72,12 @@ export default function Board() {
   return (
     <div className="card">
       <h1>게시판</h1>
+
+      <div className="row">
+        <button type="button" className="primary" onClick={() => navigate('/board/new')}>
+          글쓰기
+        </button>
+      </div>
 
       <div className="row">
         <button
@@ -123,7 +94,7 @@ export default function Board() {
             className={categoryFilter === c ? 'primary' : ''}
             onClick={() => handleCategoryFilterChange(c)}
           >
-            {CATEGORY_LABELS[c]}
+            {POST_CATEGORY_LABELS[c]}
           </button>
         ))}
       </div>
@@ -138,7 +109,7 @@ export default function Board() {
         <div className="list-item" key={p.post_id}>
           <div className="row">
             <strong>
-              [{CATEGORY_LABELS[p.category]} #{p.post_num}]
+              [{POST_CATEGORY_LABELS[p.category]} #{p.post_num}]
             </strong>
             <Link to={`/board/${p.post_id}`}>{p.title}</Link>
           </div>
@@ -161,49 +132,6 @@ export default function Board() {
           </button>
         </div>
       )}
-
-      <h3>글쓰기</h3>
-      <form onSubmit={handleSubmit}>
-        <div className="row">
-          <label>
-            종류{' '}
-            <select value={category} onChange={(e) => setCategory(e.target.value as Category)}>
-              {writableCategories.map((c) => (
-                <option key={c} value={c}>
-                  {CATEGORY_LABELS[c]}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            제목{' '}
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              maxLength={100}
-              required
-            />
-          </label>
-        </div>
-        <div className="row">
-          <label>
-            내용{' '}
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              maxLength={1000}
-              required
-            />
-          </label>
-        </div>
-        <div className="row">
-          <button className="primary" type="submit" disabled={submitting}>
-            {submitting ? '등록 중...' : '등록'}
-          </button>
-        </div>
-      </form>
-      {formError && <div className="muted warn">{formError}</div>}
-      {formSuccess && <div className="muted">{formSuccess}</div>}
     </div>
   )
 }

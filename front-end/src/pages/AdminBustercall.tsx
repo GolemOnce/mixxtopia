@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 type Category = 'comeback' | 'birthday' | 'anniversary'
 type Pair = [string, string, string]
@@ -219,6 +220,9 @@ export default function AdminBustercall() {
 
   return (
     <div className="card">
+      <div className="row">
+        <Link to="/admin">관리자 메뉴로</Link>
+      </div>
       <h1>총공 캠페인 설정</h1>
 
       <div className="row">

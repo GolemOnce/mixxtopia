@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { api, authErrorMessage } from '../api/client'
-
-type Category = 'notice' | 'free' | 'question' | 'suggestion'
+import { formatDate } from '../lib/date'
+import { POST_CATEGORY_LABELS, type PostCategory } from '../lib/postCategories'
 
 interface PostItem {
   post_id: string
   post_num: number
   author: string
-  category: Category
+  category: PostCategory
   title: string
   content: string
   created_at: string
@@ -35,18 +35,7 @@ interface CommentListResponse {
   page_size: number
 }
 
-const CATEGORY_LABELS: Record<Category, string> = {
-  notice: '공지',
-  free: '자유',
-  question: '질문',
-  suggestion: '건의',
-}
-
 const COMMENT_PAGE_SIZE = 20
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' })
-}
 
 export default function BoardPost() {
   const { postId } = useParams<{ postId: string }>()
@@ -209,7 +198,7 @@ export default function BoardPost() {
   return (
     <div className="card">
       <div className="muted">
-        [{CATEGORY_LABELS[post.category]} #{post.post_num}]
+        [{POST_CATEGORY_LABELS[post.category]} #{post.post_num}]
       </div>
       <h1>{post.title}</h1>
       <div className="muted">

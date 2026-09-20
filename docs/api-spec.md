@@ -22,6 +22,13 @@
 - 차단/차단해제는 "user"(로그인만 하면 누구나) 권한 — 자기 자신 차단은 400
 - 신고는 suggest 컬렉션에 `category=report_user`로 저장(신고 목록 조회는 suggests 도메인에서 구현 예정)
 
+## officials(official.py)
+오피셜 목록 조회	GET	/officials	오피셜	all
+오피셜 상세 조회	GET	/officials/{official_id}	오피셜	all
+오피셜 작성	POST	/officials	오피셜	admin,manager
+오피셜 수정	PATCH	/officials/{official_id}	오피셜	admin,manager
+오피셜 삭제	DELETE	/officials/{official_id}	오피셜	admin,manager
+
 ## votes(vote.py)
 투표 목록 조회	GET	/votes	투표	all
 투표 상세 조회	GET	/votes/{vote_id}	투표	all

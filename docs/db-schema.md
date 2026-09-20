@@ -39,6 +39,22 @@
 - created_at 기준 TTL 인덱스(90일)로 자동 만료
 - 현재는 회원가입 시점만 기록. 게시글/댓글 작성 시 기록은 해당 도메인 구현 시 app.core.access_log.write_access_log 재사용 예정
 
+## officials(official.py)
+- official_id	UUID	PK
+- posted_at timestamp 업로드 시간
+- link varchar(200) 링크
+- title	varchar(100)	제목
+- content	varchar(1000)	내용
+- photo_link varchar(200) 미디어 링크
+
+### 참고
+- X(nmixx_official(공트), we_nmixx(멤트)) 엔믹스 공식 채널에 올라오는 트윗을 업로드하는 게시판
+- 기본적으로 크롤링 또는 스크래핑으로 가져오지만, 수동으로 등록할 수도 있게 함
+- posted_at(업로드 시간)은 실제 X에 업로드 된 시간으로, created_at과 다름
+- created_at은 등록(수동, 자동 모두)시간으로 기록, 게시판 노출은 posted_at 기준 (`YYYY.MM.DD HH:MM`)
+- created_by는 수동 등록 시 등록한 사람(UUID), 크롤링or스크래핑 등 자동 등록 시 auto
+- 미디어 링크는 photo 게시판과 경로 매칭(nullable)
+
 ## votes(vote.py)
 - vote_id	UUID	PK
 - title	varchar(100)	제목

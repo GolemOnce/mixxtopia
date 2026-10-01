@@ -95,8 +95,34 @@ h3 {
   max-width: 720px;
   margin: 0 auto 16px;
   padding: 0 20px;
+  position: relative;
+}
+
+.navbar-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+}
+
+.navbar-brand {
+  color: #111;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.navbar-hamburger {
+  display: none;
+  padding: 6px 10px;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.navbar-links {
   display: flex;
   gap: 16px;
+  flex: 1;
 }
 
 .navbar-link {
@@ -109,6 +135,204 @@ h3 {
 .navbar-link.active {
   font-weight: 700;
   border-bottom: 2px solid #111;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.navbar-current {
+  display: none;
+}
+
+.navbar-fab-switch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  background: #fff;
+  color: #999;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.navbar-fab-switch[aria-pressed='true'] {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+/* 화면 우하단에 고정되는 플로팅 메뉴. 스크롤해도 같은 위치에 머물고,
+   버튼을 누르면 메뉴 아이콘들이 부채꼴로 펼쳐진다. */
+.fab-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: default;
+}
+
+.fab-wrap {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 41;
+  width: 52px;
+  height: 52px;
+}
+
+.fab {
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #111;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+  cursor: grab;
+  touch-action: none;
+  position: relative;
+  z-index: 2;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.fab:active,
+.fab-wrap.dragging .fab {
+  cursor: grabbing;
+}
+
+.fab svg {
+  width: 22px;
+  height: 22px;
+  transition: transform 0.3s ease;
+}
+
+.fab-wrap.open .fab svg {
+  transform: rotate(135deg);
+}
+
+.fab-item {
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  opacity: 0;
+  transform: translate(0, 0) scale(0.4);
+  pointer-events: none;
+  cursor: pointer;
+  transition:
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.2s ease;
+}
+
+.fab-item svg {
+  width: 18px;
+  height: 18px;
+}
+
+.fab-wrap.open .fab-item {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(var(--tx), var(--ty)) scale(1);
+}
+
+.navbar-auth {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navbar-auth .muted {
+  margin-top: 0;
+}
+
+.navbar-drawer-backdrop,
+.navbar-drawer {
+  display: none;
+}
+
+/* 모바일: 상단바는 [햄버거] [로고] [현재 메뉴명] ... [플로팅 버튼 스위치] [로그인/닉네임]만 남기고,
+   가운데 메뉴는 좌측 드로어로 옮긴다. */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 16px;
+  }
+
+  .navbar-hamburger {
+    display: inline-flex;
+  }
+
+  .navbar-links {
+    display: none;
+  }
+
+  .navbar-current {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 4px;
+    border: none;
+    background: none;
+    color: #111;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .navbar-drawer-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: default;
+  }
+
+  .navbar-drawer {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 220px;
+    padding: 20px 16px;
+    background: #fff;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+    z-index: 21;
+    overflow-y: auto;
+  }
+
+  .navbar-drawer .navbar-link {
+    padding: 10px 0;
+    font-size: 15px;
+  }
 }
 
 .list-item {

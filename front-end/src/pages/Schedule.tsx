@@ -54,8 +54,6 @@ export default function Schedule() {
 
   return (
     <div className="card">
-      <h1>일정</h1>
-
       {isAdmin && (
         <div className="row">
           <button type="button" className="primary" onClick={() => navigate('/schedule/new')}>

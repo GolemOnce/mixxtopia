@@ -94,8 +94,6 @@ export default function Vote() {
 
   return (
     <div className="card">
-      <h1>투표</h1>
-
       {isAdmin && (
         <div className="row">
           <button type="button" className="primary" onClick={() => navigate('/vote/new')}>

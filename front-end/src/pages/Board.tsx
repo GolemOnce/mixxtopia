@@ -71,8 +71,6 @@ export default function Board() {
 
   return (
     <div className="card">
-      <h1>게시판</h1>
-
       <div className="row">
         <button type="button" className="primary" onClick={() => navigate('/board/new')}>
           글쓰기

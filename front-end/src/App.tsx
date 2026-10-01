@@ -9,6 +9,9 @@ import BoardNew from './pages/BoardNew'
 import BoardPost from './pages/BoardPost'
 import BusterCall from './pages/BusterCall'
 import Home from './pages/Home'
+import Intro from './pages/Intro'
+import Login from './pages/Login'
+import PhotoSearch from './pages/PhotoSearch'
 import Schedule from './pages/Schedule'
 import ScheduleNew from './pages/ScheduleNew'
 import Vote from './pages/Vote'
@@ -20,6 +23,9 @@ export default function App() {
       <NavBar />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/intro" element={<Intro />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/photos" element={<PhotoSearch />} />
         <Route path="/schedule" element={<Schedule />} />
         <Route
           path="/schedule/new"

@@ -143,7 +143,7 @@ uv pip install -r requirements-dev.txt   # ruff 등 개발용 도구 포함
 
 # 프론트엔드 (경로: front-end/)
 npm run dev       # 개발 서버
-npm run build     # tsc && vite build — front-end/dist/에 정적 파일 생성
+npm run build     # tsc -b && vite build — front-end/dist/에 정적 파일 생성
 npm run preview   # 빌드 결과 로컬 프리뷰
 
 # 테스트

@@ -12,6 +12,7 @@ interface PostItem {
   category: PostCategory
   title: string
   content: string
+  view_count: number
   created_at: string
   updated_at: string | null
 }
@@ -202,7 +203,7 @@ export default function BoardPost() {
       </div>
       <h1>{post.title}</h1>
       <div className="muted">
-        {post.author} · {formatDate(post.created_at)}
+        {post.author} · {formatDate(post.created_at)} · 조회 {post.view_count}
         {post.updated_at && ' (수정됨)'}
       </div>
 

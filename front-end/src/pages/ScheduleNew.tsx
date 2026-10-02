@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import { api, authErrorMessage } from '../api/client'
 import { toIso } from '../lib/date'
 import { categoryLabel, SUGGESTED_CATEGORIES, type ScheduleItem } from '../lib/scheduleCategories'
 
 export default function ScheduleNew() {
+  const navigate = useNavigate()
+  const routerLocation = useLocation()
   const [existingCategories, setExistingCategories] = useState<string[]>([])
 
   const [title, setTitle] = useState('')
@@ -29,6 +31,15 @@ export default function ScheduleNew() {
   }, [])
 
   const categoryOptions = Array.from(new Set([...SUGGESTED_CATEGORIES, ...existingCategories]))
+
+  function handleBack() {
+    // 직접 URL로 들어왔거나 새로고침한 경우(뒤로 갈 내부 히스토리가 없음) 목록으로 보낸다.
+    if (routerLocation.key === 'default') {
+      navigate('/schedule')
+    } else {
+      navigate(-1)
+    }
+  }
 
   function resetForm() {
     setTitle('')
@@ -183,7 +194,9 @@ export default function ScheduleNew() {
       {formSuccess && <div className="muted">{formSuccess}</div>}
 
       <div className="row">
-        <Link to="/schedule">목록으로</Link>
+        <button type="button" onClick={handleBack}>
+          뒤로가기
+        </button>
       </div>
     </div>
   )

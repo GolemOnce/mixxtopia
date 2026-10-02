@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import { api, authErrorMessage } from '../api/client'
 import { toIso } from '../lib/date'
 
 export default function VoteNew() {
+  const navigate = useNavigate()
+  const location = useLocation()
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [member, setMember] = useState('')
@@ -15,6 +17,15 @@ export default function VoteNew() {
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
   const [formSuccess, setFormSuccess] = useState<string | null>(null)
+
+  function handleBack() {
+    // 직접 URL로 들어왔거나 새로고침한 경우(뒤로 갈 내부 히스토리가 없음) 목록으로 보낸다.
+    if (location.key === 'default') {
+      navigate('/vote')
+    } else {
+      navigate(-1)
+    }
+  }
 
   function resetForm() {
     setTitle('')
@@ -138,7 +149,9 @@ export default function VoteNew() {
       {formSuccess && <div className="muted">{formSuccess}</div>}
 
       <div className="row">
-        <Link to="/vote">목록으로</Link>
+        <button type="button" onClick={handleBack}>
+          뒤로가기
+        </button>
       </div>
     </div>
   )

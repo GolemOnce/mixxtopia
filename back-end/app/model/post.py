@@ -32,6 +32,7 @@ class Post(BaseEntity):
     category: PostCategory
     title: str = Field(min_length=1, max_length=100)
     content: str = Field(min_length=1, max_length=1000)
+    view_count: int = 0
 
     @classmethod
     def from_doc(cls, doc: dict) -> "Post":

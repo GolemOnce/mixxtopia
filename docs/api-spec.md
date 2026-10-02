@@ -76,6 +76,8 @@
 - "owner"는 서비스 레벨에서 `post.author_id == 로그인한 유저`로 판단(admin/manager는 무조건 통과)
 - 작성 시점 IP를 access_logs에 기록(`action=post_create`)
 - category는 변경 불가(PATCH 대상에서 제외) — post_num이 category별로 매겨지므로 카테고리 이동은 새 글 작성으로 처리
+- 조회수(view_count): `GET /posts/{post_id}` 호출 시 조회자(로그인 유저면 user_id, 아니면 IP)당 24시간에 한 번만 증가. `GET /posts`(목록)는 증가시키지 않음
+- 목록 응답의 각 항목엔 `display_num`(카테고리 구분 없는 "전체" 탭 전용 가상 번호, `total - (page-1)*page_size - index`로 매 요청 계산)도 같이 내려감 — 특정 category로 필터링했을 때는 프론트에서 `post_num`을 쓰고, `category` 없이 전체 조회했을 때만 `display_num`을 쓰면 됨. 상세 조회(`GET /posts/{post_id}`) 응답에서는 항상 null
 
 ## comments(comment.py)
 댓글 목록 조회	GET	/comments/{post_id}	댓글	all

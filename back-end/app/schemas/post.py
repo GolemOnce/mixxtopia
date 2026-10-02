@@ -23,8 +23,13 @@ class PostResponse(BaseModel):
     category: PostCategory
     title: str
     content: str
+    view_count: int
     created_at: datetime
     updated_at: datetime | None = None
+    # 목록 조회에서 "전체" 탭(카테고리 미지정)에 쓰는 가상 번호. DB에 저장하지 않고
+    # 응답 생성 시 total/page/page_size로 계산(app.router.post._to_response 참고).
+    # 상세 조회 응답에서는 항상 None.
+    display_num: int | None = None
 
 
 class PostListResponse(BaseModel):

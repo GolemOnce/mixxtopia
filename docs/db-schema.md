@@ -97,6 +97,7 @@
 - category enum 글 종류
 - title	varchar(100)	제목
 - content	varchar(1000)	내용
+- view_count INT 조회수(기본 0)
 
 ### 참고
 - post_num: category별 독립적인 int형(1부터 increase)으로 부여
@@ -104,6 +105,8 @@
 - category 공지(notice), 자유(free), 질문(question), 건의(suggestion) 구분
 - author_id는 최초 명세에 없던 필드로, author(닉네임 스냅샷)만으로는 수정/삭제 권한의 "owner" 판별이 불가능해서(닉네임은 불변 식별자가 아님) 추가함
 - category는 등록 후 변경 불가(PATCH 대상에서 제외) — 카테고리를 옮기면 post_num 체계가 깨짐
+- view_count: `GET /posts/{post_id}` 조회마다 무조건 증가시키지 않고, Redis에 `post_view:{post_id}:{조회자키}`(로그인 유저면 user_id, 아니면 IP)를 24시간 TTL로 `SET NX`해서 처음 보는 조회자일 때만 `$inc`. 새로고침 연타/어뷰징 방지 목적
+- display_num(DB에는 없음, 응답에만 존재): 게시판 "전체" 탭에서 category를 가리지 않고 보여줄 가상 번호. `total - (page-1)*page_size - index`로 응답 생성 시점에 계산만 하고 저장하지 않음(삭제되면 total이 줄어드는 것만으로 자연히 재계산됨) — 카테고리별 post_num과 별개
 
 ## comments(comment.py)
 - comment_id	UUID	PK

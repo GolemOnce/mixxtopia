@@ -13,7 +13,7 @@ def _is_privileged(current_user: User | None) -> bool:
     return current_user is not None and current_user.role in (UserRole.admin, UserRole.manager)
 
 
-def _to_response(doc: dict) -> PostResponse:
+def _to_response(doc: dict, display_num: int | None = None) -> PostResponse:
     return PostResponse(
         post_id=doc["_id"],
         post_num=doc["post_num"],
@@ -21,8 +21,10 @@ def _to_response(doc: dict) -> PostResponse:
         category=doc["category"],
         title=doc["title"],
         content=doc["content"],
+        view_count=doc.get("view_count", 0),
         created_at=doc["created_at"],
         updated_at=doc.get("updated_at"),
+        display_num=display_num,
     )
 
 
@@ -40,15 +42,22 @@ async def list_posts(
     docs, total = await post_service.list_posts(
         category, page, page_size, exclude_suggestion=not privileged
     )
-    return PostListResponse(
-        items=[_to_response(doc) for doc in docs], total=total, page=page, page_size=page_size
-    )
+    # "전체"(category 미지정) 탭에서 보여줄 가상 번호: 삭제/필터로 바뀌는 total 기준으로
+    # 매번 다시 계산한다(별도 필드로 저장하지 않음).
+    base_num = total - (page - 1) * page_size
+    items = [_to_response(doc, display_num=base_num - i) for i, doc in enumerate(docs)]
+    return PostListResponse(items=items, total=total, page=page, page_size=page_size)
 
 
 @router.get("/{post_id}", response_model=PostResponse)
-async def get_post(post_id: str, current_user: User | None = Depends(get_current_user_optional)):
+async def get_post(
+    post_id: str,
+    request: Request,
+    current_user: User | None = Depends(get_current_user_optional),
+):
+    viewer_key = str(current_user.user_id) if current_user else get_client_ip(request)
     try:
-        doc = await post_service.get_post(post_id)
+        doc = await post_service.get_post(post_id, viewer_key)
     except post_service.PostNotFoundError as exc:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "게시글을 찾을 수 없습니다.") from exc
 

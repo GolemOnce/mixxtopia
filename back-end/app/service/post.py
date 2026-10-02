@@ -3,10 +3,14 @@ from uuid import uuid4
 from pymongo import ReturnDocument
 
 from app.core.access_log import AccessLogAction, write_access_log
+from app.database import redis_client
 from app.model.base import utcnow
 from app.model.post import Post, PostCategory, post_counters_col, posts_col
 from app.model.user import User, UserRole
 from app.schemas.post import PostCreateRequest, PostUpdateRequest
+
+# 같은 조회자(로그인 유저면 user_id, 아니면 IP)는 이 시간 동안 다시 봐도 조회수를 올리지 않는다.
+VIEW_DEDUP_TTL_SECONDS = 24 * 60 * 60
 
 
 class PostNotFoundError(Exception):
@@ -57,10 +61,21 @@ async def list_posts(
     return docs, total
 
 
-async def get_post(post_id: str) -> dict:
+async def get_post(post_id: str, viewer_key: str) -> dict:
     doc = await posts_col.find_one({"_id": post_id, "deleted_at": None})
     if not doc:
         raise PostNotFoundError()
+
+    dedup_key = f"post_view:{post_id}:{viewer_key}"
+    is_first_view = await redis_client.set(dedup_key, "1", nx=True, ex=VIEW_DEDUP_TTL_SECONDS)
+    if is_first_view:
+        updated = await posts_col.find_one_and_update(
+            {"_id": post_id},
+            {"$inc": {"view_count": 1}},
+            return_document=ReturnDocument.AFTER,
+        )
+        if updated:
+            doc = updated
     return doc
 
 

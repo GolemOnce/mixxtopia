@@ -141,9 +141,10 @@ export default function NavBar() {
             className="navbar-fab-switch"
             aria-label={fabEnabled ? '플로팅 메뉴 버튼 끄기' : '플로팅 메뉴 버튼 켜기'}
             aria-pressed={fabEnabled}
+            title={fabEnabled ? '토글 OFF' : '토글 ON'}
             onClick={toggleFabEnabled}
           >
-            {fabEnabled ? '●' : '○'}
+            <span className="navbar-fab-switch-thumb" />
           </button>
           <div className="navbar-auth-slot">{renderAuth()}</div>
         </div>

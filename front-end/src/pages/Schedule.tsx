@@ -62,18 +62,24 @@ export default function Schedule() {
         </div>
       )}
 
-      <div className="row">
-        <label>
-          종류 필터{' '}
-          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
-            <option value="">전체</option>
-            {filterCategories.map((c) => (
-              <option key={c} value={c}>
-                {categoryLabel(c)}
-              </option>
-            ))}
-          </select>
-        </label>
+      <div className="board-tabs">
+        <button
+          type="button"
+          className={`board-tab${categoryFilter === '' ? ' active' : ''}`}
+          onClick={() => setCategoryFilter('')}
+        >
+          전체
+        </button>
+        {filterCategories.map((c) => (
+          <button
+            key={c}
+            type="button"
+            className={`board-tab${categoryFilter === c ? ' active' : ''}`}
+            onClick={() => setCategoryFilter(c)}
+          >
+            {categoryLabel(c)}
+          </button>
+        ))}
       </div>
 
       {loading && <div className="muted">불러오는 중...</div>}

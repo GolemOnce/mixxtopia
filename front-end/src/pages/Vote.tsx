@@ -102,18 +102,27 @@ export default function Vote() {
         </div>
       )}
 
+      <div className="board-tabs">
+        <button
+          type="button"
+          className={`board-tab${organizerFilter === '' ? ' active' : ''}`}
+          onClick={() => setOrganizerFilter('')}
+        >
+          전체
+        </button>
+        {organizers.map((o) => (
+          <button
+            key={o}
+            type="button"
+            className={`board-tab${organizerFilter === o ? ' active' : ''}`}
+            onClick={() => setOrganizerFilter(o)}
+          >
+            {o}
+          </button>
+        ))}
+      </div>
+
       <div className="row">
-        <label>
-          매체 필터{' '}
-          <select value={organizerFilter} onChange={(e) => setOrganizerFilter(e.target.value)}>
-            <option value="">전체</option>
-            {organizers.map((o) => (
-              <option key={o} value={o}>
-                {o}
-              </option>
-            ))}
-          </select>
-        </label>
         <label>
           <input
             type="checkbox"

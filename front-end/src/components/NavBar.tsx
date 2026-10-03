@@ -128,7 +128,7 @@ export default function NavBar() {
           ☰
         </button>
         <Link to="/" className="navbar-brand">
-          MIXXTOPIA
+          <img src="/mixxtopia_white_rs.png" alt="MIXXTOPIA" />
         </Link>
         {currentLink && (
           <button type="button" className="navbar-current" onClick={() => window.location.reload()}>

@@ -169,14 +169,24 @@ h3 {
   display: flex;
   align-items: center;
   gap: 32px;
-  padding: 12px 0;
+  height: 64px;
+  overflow: hidden;
 }
 
 .navbar-brand {
-  color: #111;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.navbar-brand img {
+  /* 정사각형 원본 위아래 여백을 잘라 직사각형 로고처럼 보이게 한다. */
+  height: 100px;
+  width: 120px;
+  object-fit: cover;
+  object-position: center 35%;
+  display: block;
 }
 
 .navbar-hamburger {
@@ -360,11 +370,24 @@ h3 {
    가운데 메뉴는 좌측 드로어로 옮긴다. */
 @media (max-width: 768px) {
   .navbar {
+    border-radius: 0;
+    box-shadow: none;
+    border-bottom: 1px solid #eee;
+    margin: 0;
     padding: 10px 16px;
   }
 
   .navbar-bar {
     gap: 12px;
+  }
+
+  .navbar-brand {
+    padding-left: 0;
+  }
+
+  .navbar-brand img {
+    height: 55px;
+    width: 85px;
   }
 
   .navbar-right {
@@ -421,6 +444,32 @@ h3 {
   .navbar-drawer .navbar-link {
     padding: 10px 0;
     font-size: 15px;
+  }
+}
+
+
+/* 모바일: PC처럼 둥근 흰 카드를 연보라 배경 위에 띄우는 대신, 가장자리까지 꽉 찬
+   플랫(flat) 레이아웃으로 바꾼다 — 네이티브 앱 느낌의 커뮤니티 사이트들과 같은 톤. */
+@media (max-width: 768px) {
+  body {
+    margin: 0;
+  }
+
+  html {
+    background: #fff;
+  }
+
+  .card {
+    max-width: none;
+    margin: 0;
+    padding: 16px;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .page-with-sidebar {
+    max-width: none;
+    margin: 0;
   }
 }
 

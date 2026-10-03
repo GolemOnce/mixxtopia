@@ -8,6 +8,7 @@ import FloatingMenu from './FloatingMenu'
 const BASE_LINKS = [
   { to: '/', label: '홈' },
   { to: '/intro', label: '소개' },
+  { to: '/official', label: '공식' },
   { to: '/schedule', label: '일정' },
   { to: '/vote', label: '투표' },
   { to: '/photos', label: '사진검색' },

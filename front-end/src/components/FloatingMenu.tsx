@@ -16,6 +16,13 @@ const ICONS: Record<string, JSX.Element> = {
       <circle cx="12" cy="7.5" r="0.9" fill="currentColor" stroke="none" />
     </>
   ),
+  '/official': (
+    <path
+      fill="currentColor"
+      stroke="none"
+      d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.64 7.58H.47l8.6-9.83L0 1.15h7.59l5.24 6.93Zm-1.29 19.49h2.04L6.49 3.24H4.3Z"
+    />
+  ),
   '/schedule': (
     <>
       <rect x="3" y="4" width="18" height="18" rx="2" />

@@ -11,6 +11,9 @@ import BusterCall from './pages/BusterCall'
 import Home from './pages/Home'
 import Intro from './pages/Intro'
 import Login from './pages/Login'
+import Official from './pages/Official'
+import OfficialDetail from './pages/OfficialDetail'
+import OfficialNew from './pages/OfficialNew'
 import PhotoSearch from './pages/PhotoSearch'
 import Schedule from './pages/Schedule'
 import ScheduleNew from './pages/ScheduleNew'
@@ -26,6 +29,16 @@ export default function App() {
         <Route path="/intro" element={<Intro />} />
         <Route path="/login" element={<Login />} />
         <Route path="/photos" element={<PhotoSearch />} />
+        <Route path="/official" element={<Official />} />
+        <Route
+          path="/official/new"
+          element={
+            <RequireAdmin>
+              <OfficialNew />
+            </RequireAdmin>
+          }
+        />
+        <Route path="/official/:officialId" element={<OfficialDetail />} />
         <Route path="/schedule" element={<Schedule />} />
         <Route
           path="/schedule/new"

@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { api, authErrorMessage } from '../api/client'
 import { useCurrentUser } from '../auth/useCurrentUser'
 import { formatBoardDate } from '../lib/date'
+import { getPaginationRange } from '../lib/pagination'
 import { POST_CATEGORIES, POST_CATEGORY_LABELS, type PostCategory } from '../lib/postCategories'
 
 interface PostItem {
@@ -27,7 +28,6 @@ interface PostListResponse {
 }
 
 const PAGE_SIZE = 30
-const PAGE_WINDOW = 9
 
 export default function Board() {
   const navigate = useNavigate()
@@ -77,16 +77,7 @@ export default function Board() {
   }
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
-
-  // 현재 페이지가 가능한 한 가운데 오도록 최대 PAGE_WINDOW개의 페이지 번호 창을 계산한다.
-  let pageWindowStart = Math.max(1, page - Math.floor(PAGE_WINDOW / 2))
-  if (pageWindowStart + PAGE_WINDOW - 1 > totalPages) {
-    pageWindowStart = Math.max(1, totalPages - PAGE_WINDOW + 1)
-  }
-  const pageNumbers = Array.from(
-    { length: Math.min(PAGE_WINDOW, totalPages) },
-    (_, i) => pageWindowStart + i,
-  )
+  const pageTokens = getPaginationRange(page, totalPages)
 
   return (
     <div className="page-with-sidebar">
@@ -168,43 +159,33 @@ export default function Board() {
               type="button"
               className="pagination-btn"
               disabled={page <= 1}
-              onClick={() => setPage(1)}
-            >
-              처음
-            </button>
-            <button
-              type="button"
-              className="pagination-btn"
-              disabled={page <= 1}
               onClick={() => setPage((p) => p - 1)}
             >
-              이전
+              &lt; 이전
             </button>
-            {pageNumbers.map((n) => (
-              <button
-                key={n}
-                type="button"
-                className={`pagination-page${n === page ? ' current' : ''}`}
-                onClick={() => setPage(n)}
-              >
-                {n}
-              </button>
-            ))}
+            {pageTokens.map((token, i) =>
+              token === 'ellipsis' ? (
+                <span key={`ellipsis-${i}`} className="pagination-ellipsis">
+                  ...
+                </span>
+              ) : (
+                <button
+                  key={token}
+                  type="button"
+                  className={`pagination-page${token === page ? ' current' : ''}`}
+                  onClick={() => setPage(token)}
+                >
+                  {token}
+                </button>
+              ),
+            )}
             <button
               type="button"
               className="pagination-btn"
               disabled={page >= totalPages}
               onClick={() => setPage((p) => p + 1)}
             >
-              다음
-            </button>
-            <button
-              type="button"
-              className="pagination-btn"
-              disabled={page >= totalPages}
-              onClick={() => setPage(totalPages)}
-            >
-              끝
+              다음 &gt;
             </button>
           </div>
           <button type="button" className="board-write-btn" onClick={() => navigate('/board/new')}>

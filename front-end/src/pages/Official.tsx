@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { api, authErrorMessage } from '../api/client'
 import { useCurrentUser } from '../auth/useCurrentUser'
 import { formatBoardDate } from '../lib/date'
+import { getPaginationRange } from '../lib/pagination'
 import {
   OFFICIAL_ACCOUNTS,
   OFFICIAL_ACCOUNT_LABELS,
@@ -30,7 +31,6 @@ interface OfficialListResponse {
 }
 
 const PAGE_SIZE = 30
-const PAGE_WINDOW = 9
 
 export default function Official() {
   const navigate = useNavigate()
@@ -76,15 +76,7 @@ export default function Official() {
   }
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
-
-  let pageWindowStart = Math.max(1, page - Math.floor(PAGE_WINDOW / 2))
-  if (pageWindowStart + PAGE_WINDOW - 1 > totalPages) {
-    pageWindowStart = Math.max(1, totalPages - PAGE_WINDOW + 1)
-  }
-  const pageNumbers = Array.from(
-    { length: Math.min(PAGE_WINDOW, totalPages) },
-    (_, i) => pageWindowStart + i,
-  )
+  const pageTokens = getPaginationRange(page, totalPages)
 
   return (
     <div className="page-with-sidebar">
@@ -165,43 +157,33 @@ export default function Official() {
               type="button"
               className="pagination-btn"
               disabled={page <= 1}
-              onClick={() => setPage(1)}
-            >
-              처음
-            </button>
-            <button
-              type="button"
-              className="pagination-btn"
-              disabled={page <= 1}
               onClick={() => setPage((p) => p - 1)}
             >
-              이전
+              &lt; 이전
             </button>
-            {pageNumbers.map((n) => (
-              <button
-                key={n}
-                type="button"
-                className={`pagination-page${n === page ? ' current' : ''}`}
-                onClick={() => setPage(n)}
-              >
-                {n}
-              </button>
-            ))}
+            {pageTokens.map((token, i) =>
+              token === 'ellipsis' ? (
+                <span key={`ellipsis-${i}`} className="pagination-ellipsis">
+                  ...
+                </span>
+              ) : (
+                <button
+                  key={token}
+                  type="button"
+                  className={`pagination-page${token === page ? ' current' : ''}`}
+                  onClick={() => setPage(token)}
+                >
+                  {token}
+                </button>
+              ),
+            )}
             <button
               type="button"
               className="pagination-btn"
               disabled={page >= totalPages}
               onClick={() => setPage((p) => p + 1)}
             >
-              다음
-            </button>
-            <button
-              type="button"
-              className="pagination-btn"
-              disabled={page >= totalPages}
-              onClick={() => setPage(totalPages)}
-            >
-              끝
+              다음 &gt;
             </button>
           </div>
           {isAdmin && (

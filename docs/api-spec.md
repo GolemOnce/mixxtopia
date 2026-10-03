@@ -29,6 +29,12 @@
 오피셜 수정	PATCH	/officials/{official_id}	오피셜	admin,manager
 오피셜 삭제	DELETE	/officials/{official_id}	오피셜	admin,manager
 
+### 참고
+- `GET /officials`는 쿼리파라미터 `account`(nmixx_official/we_nmixx), `page`, `page_size`(기본 20)로 필터링/페이지네이션. `posted_at` 내림차순(최신순) 정렬 — created_at이 아니라 실제 X 업로드 시각 기준
+- account는 코드에서 분기(프론트 전체/공트/멤트 탭 구분)에 쓰여서 자유 문자열이 아니라 enum(`OfficialAccount`)으로 강제
+- 수동 등록만 이 API로 가능. 크롤링/스크래핑 자동 등록은 별도 배치 스크립트가 DB에 직접 적재할 예정(이 때 created_by는 UUID 대신 문자열 "auto")
+- 작성/수정/삭제 권한은 vote와 동일하게 owner 개념 없이 admin/manager만
+
 ## votes(vote.py)
 투표 목록 조회	GET	/votes	투표	all
 투표 상세 조회	GET	/votes/{vote_id}	투표	all

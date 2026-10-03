@@ -42,18 +42,22 @@
 ## officials(official.py)
 - official_id	UUID	PK
 - posted_at timestamp 업로드 시간
+- account varchar(16) 계정
 - link varchar(200) 링크
 - title	varchar(100)	제목
 - content	varchar(1000)	내용
 - photo_link varchar(200) 미디어 링크
 
 ### 참고
-- X(nmixx_official(공트), we_nmixx(멤트)) 엔믹스 공식 채널에 올라오는 트윗을 업로드하는 게시판
+- X(nmixx_official(공식계정), we_nmixx(멤버계정)) 엔믹스 공식 채널에 올라오는 트윗을 업로드하는 게시판
 - 기본적으로 크롤링 또는 스크래핑으로 가져오지만, 수동으로 등록할 수도 있게 함
 - posted_at(업로드 시간)은 실제 X에 업로드 된 시간으로, created_at과 다름
+- account는 nmixx_official(공식계정), we_nmixx(멤버계정)인지 구분하는 기준, 프론트에서 전체/공트(=공식계정)/멤트(=멤버계정) 구분해서 보여줄 수 있게 함. 여기서 멤버계정이라는 건 멤버 각각 해당되는 게 아니고 공식 계정과 다른, 멤버가 주도하여 올리는 공용 계정을 말함.
 - created_at은 등록(수동, 자동 모두)시간으로 기록, 게시판 노출은 posted_at 기준 (`YYYY.MM.DD HH:MM`)
 - created_by는 수동 등록 시 등록한 사람(UUID), 크롤링or스크래핑 등 자동 등록 시 auto
+  - BaseEntity의 created_by(UUID 고정)와 달리 이 도메인만 UUID|str로 타입을 넓힘(`app/model/official.py`)
 - 미디어 링크는 photo 게시판과 경로 매칭(nullable)
+- account는 자유 문자열이 아니라 enum(`OfficialAccount`: nmixx_official, we_nmixx)으로 관리 — 프론트 전체/공트/멤트 탭 분기에 코드가 그 값을 직접 참조하기 때문
 
 ## votes(vote.py)
 - vote_id	UUID	PK

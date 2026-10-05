@@ -19,5 +19,8 @@ python-jose[cryptography]
 #OAuth provider 검증용 HTTP client
 httpx
 
+#링크 미리보기용 OpenGraph 메타태그 파싱
+beautifulsoup4
+
 #S3 (사진/동영상 미디어)
 boto3

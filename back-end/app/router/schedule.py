@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.deps import require_roles
@@ -6,6 +8,22 @@ from app.schemas.schedule import ScheduleCreateRequest, ScheduleResponse, Schedu
 from app.service import schedule as schedule_service
 
 router = APIRouter(prefix="/api/schedules", tags=["schedule"])
+
+_ISO_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+
+
+def _month_range(year: int, month: int) -> tuple[str, str]:
+    """[이 달의 시작, 다음 달의 시작) 문자열 범위. start_at/end_at이 DB에 ISO 문자열로
+    저장돼 있어(app.model.base의 mode="json" dump) datetime 객체가 아니라 같은 포맷의
+    문자열로 비교해야 한다 — 그래야 사전식 비교가 시간 순서와 일치한다."""
+
+    start = datetime(year, month, 1, tzinfo=timezone.utc)
+    next_month = (
+        datetime(year + 1, 1, 1, tzinfo=timezone.utc)
+        if month == 12
+        else datetime(year, month + 1, 1, tzinfo=timezone.utc)
+    )
+    return start.strftime(_ISO_FORMAT), next_month.strftime(_ISO_FORMAT)
 
 
 def _to_response(doc: dict) -> ScheduleResponse:
@@ -27,8 +45,21 @@ def _to_response(doc: dict) -> ScheduleResponse:
 async def list_schedules(
     category: str | None = None,
     member: str | None = None,
+    year: int | None = None,
+    month: int | None = None,
 ):
-    docs = await schedule_service.list_schedules(category=category, member=member)
+    range_start = range_end_exclusive = None
+    if year is not None and month is not None:
+        if not 1 <= month <= 12:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "month는 1~12 사이여야 합니다.")
+        range_start, range_end_exclusive = _month_range(year, month)
+
+    docs = await schedule_service.list_schedules(
+        category=category,
+        member=member,
+        range_start=range_start,
+        range_end_exclusive=range_end_exclusive,
+    )
     return [_to_response(doc) for doc in docs]
 
 

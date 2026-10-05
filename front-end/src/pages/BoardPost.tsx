@@ -197,149 +197,153 @@ export default function BoardPost() {
   if (!post) return null
 
   return (
-    <div className="card">
-      <div className="muted">
-        [{POST_CATEGORY_LABELS[post.category]} #{post.post_num}]
-      </div>
-      <h1>{post.title}</h1>
-      <div className="muted">
-        {post.author} · {formatDate(post.created_at)} · 조회 {post.view_count}
-        {post.updated_at && ' (수정됨)'}
-      </div>
+    <div className="page-with-sidebar">
+      <div className="card">
+        <div className="muted">
+          [{POST_CATEGORY_LABELS[post.category]} #{post.post_num}]
+        </div>
+        <h1>{post.title}</h1>
+        <div className="muted">
+          {post.author} · {formatDate(post.created_at)} · 조회 {post.view_count}
+          {post.updated_at && ' (수정됨)'}
+        </div>
 
-      {!editing && (
-        <>
-          <pre>{post.content}</pre>
-          <div className="row">
-            <button type="button" onClick={() => setEditing(true)}>
-              수정
-            </button>
-            <button type="button" onClick={handleDeletePost}>
-              삭제
-            </button>
-          </div>
-        </>
-      )}
-
-      {editing && (
-        <form onSubmit={handleEditSubmit}>
-          <div className="row">
-            <label>
-              제목{' '}
-              <input
-                value={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
-                maxLength={100}
-                required
-              />
-            </label>
-          </div>
-          <div className="row">
-            <label>
-              내용{' '}
-              <textarea
-                value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
-                maxLength={1000}
-                required
-              />
-            </label>
-          </div>
-          <div className="row">
-            <button className="primary" type="submit" disabled={editSubmitting}>
-              {editSubmitting ? '저장 중...' : '저장'}
-            </button>
-            <button type="button" onClick={() => setEditing(false)}>
-              취소
-            </button>
-          </div>
-          {editError && <div className="muted warn">{editError}</div>}
-        </form>
-      )}
-
-      <h3>댓글 {commentTotal}개</h3>
-      <div className="row">
-        <label>
-          정렬{' '}
-          <select
-            value={commentSort}
-            onChange={(e) => {
-              setCommentSort(e.target.value as 'asc' | 'desc')
-              setCommentPage(1)
-            }}
-          >
-            <option value="asc">등록순</option>
-            <option value="desc">최신순</option>
-          </select>
-        </label>
-      </div>
-
-      {loadingComments && <div className="muted">불러오는 중...</div>}
-      {commentListError && <div className="muted warn">{commentListError}</div>}
-      {!loadingComments && !commentListError && comments.length === 0 && (
-        <div className="muted">댓글이 없습니다.</div>
-      )}
-
-      {comments.map((c) => (
-        <div className="list-item" key={c.comment_id}>
-          {renderComment(c)}
-          {c.replies.length > 0 && (
-            <div className="reply-list">
-              {c.replies.map((r) => (
-                <div key={r.comment_id}>{renderComment(r)}</div>
-              ))}
+        {!editing && (
+          <>
+            <pre>{post.content}</pre>
+            <div className="row">
+              <button type="button" onClick={() => setEditing(true)}>
+                수정
+              </button>
+              <button type="button" onClick={handleDeletePost}>
+                삭제
+              </button>
             </div>
-          )}
-        </div>
-      ))}
+          </>
+        )}
 
-      {commentTotalPages > 1 && (
+        {editing && (
+          <form onSubmit={handleEditSubmit}>
+            <div className="row">
+              <label>
+                제목{' '}
+                <input
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  maxLength={100}
+                  required
+                />
+              </label>
+            </div>
+            <div className="row">
+              <label>
+                내용{' '}
+                <textarea
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  maxLength={1000}
+                  required
+                />
+              </label>
+            </div>
+            <div className="row">
+              <button className="primary" type="submit" disabled={editSubmitting}>
+                {editSubmitting ? '저장 중...' : '저장'}
+              </button>
+              <button type="button" onClick={() => setEditing(false)}>
+                취소
+              </button>
+            </div>
+            {editError && <div className="muted warn">{editError}</div>}
+          </form>
+        )}
+
+        <h3>댓글 {commentTotal}개</h3>
         <div className="row">
-          <button
-            type="button"
-            disabled={commentPage <= 1}
-            onClick={() => setCommentPage((p) => p - 1)}
-          >
-            이전
-          </button>
-          <span className="muted">
-            {commentPage} / {commentTotalPages}
-          </span>
-          <button
-            type="button"
-            disabled={commentPage >= commentTotalPages}
-            onClick={() => setCommentPage((p) => p + 1)}
-          >
-            다음
-          </button>
+          <label>
+            정렬{' '}
+            <select
+              value={commentSort}
+              onChange={(e) => {
+                setCommentSort(e.target.value as 'asc' | 'desc')
+                setCommentPage(1)
+              }}
+            >
+              <option value="asc">등록순</option>
+              <option value="desc">최신순</option>
+            </select>
+          </label>
         </div>
-      )}
 
-      <form onSubmit={handleCommentSubmit}>
-        {replyTo && (
-          <div className="muted">
-            {replyTo.author}님에게 답글 작성 중{' '}
-            <button type="button" onClick={() => setReplyTo(null)}>
-              취소
+        {loadingComments && <div className="muted">불러오는 중...</div>}
+        {commentListError && <div className="muted warn">{commentListError}</div>}
+        {!loadingComments && !commentListError && comments.length === 0 && (
+          <div className="muted">댓글이 없습니다.</div>
+        )}
+
+        {comments.map((c) => (
+          <div className="list-item" key={c.comment_id}>
+            {renderComment(c)}
+            {c.replies.length > 0 && (
+              <div className="reply-list">
+                {c.replies.map((r) => (
+                  <div key={r.comment_id}>{renderComment(r)}</div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+
+        {commentTotalPages > 1 && (
+          <div className="row">
+            <button
+              type="button"
+              disabled={commentPage <= 1}
+              onClick={() => setCommentPage((p) => p - 1)}
+            >
+              이전
+            </button>
+            <span className="muted">
+              {commentPage} / {commentTotalPages}
+            </span>
+            <button
+              type="button"
+              disabled={commentPage >= commentTotalPages}
+              onClick={() => setCommentPage((p) => p + 1)}
+            >
+              다음
             </button>
           </div>
         )}
-        <div className="row">
-          <textarea
-            value={commentContent}
-            onChange={(e) => setCommentContent(e.target.value)}
-            maxLength={100}
-            placeholder="댓글을 입력하세요"
-            required
-          />
-        </div>
-        <div className="row">
-          <button className="primary" type="submit" disabled={commentSubmitting}>
-            {commentSubmitting ? '등록 중...' : '댓글 등록'}
-          </button>
-        </div>
-      </form>
-      {commentError && <div className="muted warn">{commentError}</div>}
+
+        <form onSubmit={handleCommentSubmit}>
+          {replyTo && (
+            <div className="muted">
+              {replyTo.author}님에게 답글 작성 중{' '}
+              <button type="button" onClick={() => setReplyTo(null)}>
+                취소
+              </button>
+            </div>
+          )}
+          <div className="row">
+            <textarea
+              value={commentContent}
+              onChange={(e) => setCommentContent(e.target.value)}
+              maxLength={100}
+              placeholder="댓글을 입력하세요"
+              required
+            />
+          </div>
+          <div className="row">
+            <button className="primary" type="submit" disabled={commentSubmitting}>
+              {commentSubmitting ? '등록 중...' : '댓글 등록'}
+            </button>
+          </div>
+        </form>
+        {commentError && <div className="muted warn">{commentError}</div>}
+      </div>
+      {/* 임시 자리 — 나중에 다른 콘텐츠 들어갈 공간 */}
+      <div className="page-sidebar" />
     </div>
   )
 }

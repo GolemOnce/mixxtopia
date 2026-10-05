@@ -38,6 +38,16 @@ const STATUS_ORDER: Record<VoteStatus, number> = {
   ended: 2,
 }
 
+type VoteFilter = 'active' | 'ended' | 'all'
+
+const VOTE_FILTER_LABELS: Record<VoteFilter, string> = {
+  active: '진행중인 투표',
+  ended: '종료된 투표',
+  all: '전체 보기',
+}
+
+const VOTE_FILTERS: VoteFilter[] = ['active', 'ended', 'all']
+
 export default function Vote() {
   const navigate = useNavigate()
   const { isAdmin } = useCurrentUser()
@@ -45,8 +55,7 @@ export default function Vote() {
   const [votes, setVotes] = useState<VoteItem[]>([])
   const [loading, setLoading] = useState(true)
   const [listError, setListError] = useState<string | null>(null)
-  const [organizerFilter, setOrganizerFilter] = useState('')
-  const [showEnded, setShowEnded] = useState(false)
+  const [statusFilter, setStatusFilter] = useState<VoteFilter>('active')
 
   async function loadVotes() {
     setLoading(true)
@@ -65,22 +74,21 @@ export default function Vote() {
     loadVotes()
   }, [])
 
-  const organizers = useMemo(
-    () => Array.from(new Set(votes.map((v) => v.organizer))).sort(),
-    [votes],
-  )
-
   const visibleVotes = useMemo(() => {
     const now = Date.now()
     return votes
-      .filter((v) => !organizerFilter || v.organizer === organizerFilter)
-      .filter((v) => showEnded || getStatus(v, now) !== 'ended')
+      .filter((v) => {
+        if (statusFilter === 'all') return true
+        const status = getStatus(v, now)
+        // '진행중인 투표' 탭엔 아직 안 끝난 것(진행중+예정)을 같이 보여준다.
+        return statusFilter === 'ended' ? status === 'ended' : status !== 'ended'
+      })
       .sort((a, b) => {
         const statusDiff = STATUS_ORDER[getStatus(a, now)] - STATUS_ORDER[getStatus(b, now)]
         if (statusDiff !== 0) return statusDiff
         return new Date(a.end_at).getTime() - new Date(b.end_at).getTime()
       })
-  }, [votes, organizerFilter, showEnded])
+  }, [votes, statusFilter])
 
   async function handleDelete(voteId: string) {
     if (!confirm('이 투표를 삭제할까요?')) return
@@ -103,40 +111,22 @@ export default function Vote() {
       )}
 
       <div className="board-tabs">
-        <button
-          type="button"
-          className={`board-tab${organizerFilter === '' ? ' active' : ''}`}
-          onClick={() => setOrganizerFilter('')}
-        >
-          전체
-        </button>
-        {organizers.map((o) => (
+        {VOTE_FILTERS.map((f) => (
           <button
-            key={o}
+            key={f}
             type="button"
-            className={`board-tab${organizerFilter === o ? ' active' : ''}`}
-            onClick={() => setOrganizerFilter(o)}
+            className={`board-tab${statusFilter === f ? ' active' : ''}`}
+            onClick={() => setStatusFilter(f)}
           >
-            {o}
+            {VOTE_FILTER_LABELS[f]}
           </button>
         ))}
-      </div>
-
-      <div className="row">
-        <label>
-          <input
-            type="checkbox"
-            checked={showEnded}
-            onChange={(e) => setShowEnded(e.target.checked)}
-          />{' '}
-          지난 투표 포함
-        </label>
       </div>
 
       {loading && <div className="muted">불러오는 중...</div>}
       {listError && <div className="muted warn">{listError}</div>}
       {!loading && !listError && visibleVotes.length === 0 && (
-        <div className="muted">표시할 투표가 없습니다.</div>
+        <div className="muted">진행중인 투표가 없습니다.</div>
       )}
 
       {visibleVotes.map((v) => {

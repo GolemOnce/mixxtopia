@@ -18,12 +18,19 @@ class InvalidTimeRangeError(Exception):
 async def list_schedules(
     category: str | None = None,
     member: str | None = None,
+    range_start: str | None = None,
+    range_end_exclusive: str | None = None,
 ) -> list[dict]:
     query: dict = {"deleted_at": None}
     if category is not None:
         query["category"] = category
     if member is not None:
         query["member"] = member
+    if range_start is not None and range_end_exclusive is not None:
+        # 달력 뷰: 그 달과 "겹치는" 일정 전부(월을 걸친 일정도 포함) 가져온다.
+        # start_at/end_at이 ISO 문자열로 저장돼 있어 문자열끼리 비교한다(router._month_range 참고).
+        query["start_at"] = {"$lt": range_end_exclusive}
+        query["end_at"] = {"$gte": range_start}
 
     return [doc async for doc in schedules_col.find(query).sort("start_at", 1)]
 

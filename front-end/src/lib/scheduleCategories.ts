@@ -40,3 +40,39 @@ export const CATEGORY_LABELS: Record<string, string> = {
 export function categoryLabel(category: string): string {
   return CATEGORY_LABELS[category] ?? category
 }
+
+const CATEGORY_COLORS: Record<string, string> = {
+  musicbroad: '#f87171',
+  radio: '#fb923c',
+  broadcast: '#fbbf24',
+  award: '#facc15',
+  festival: '#34d399',
+  concert: '#38bdf8',
+  fanmeeting: '#818cf8',
+  fansign: '#c084fc',
+  etc: '#94a3b8',
+}
+
+// 자유 문자열이라 모르는 카테고리가 올 수 있다 — 그런 경우 문자열을 해시해서
+// 팔레트 중 하나를 일관되게 골라준다(같은 카테고리는 항상 같은 색).
+const FALLBACK_PALETTE = [
+  '#f87171',
+  '#fb923c',
+  '#fbbf24',
+  '#34d399',
+  '#38bdf8',
+  '#818cf8',
+  '#c084fc',
+  '#f472b6',
+  '#94a3b8',
+]
+
+export function categoryColor(category: string): string {
+  if (CATEGORY_COLORS[category]) return CATEGORY_COLORS[category]
+
+  let hash = 0
+  for (let i = 0; i < category.length; i++) {
+    hash = (hash * 31 + category.charCodeAt(i)) >>> 0
+  }
+  return FALLBACK_PALETTE[hash % FALLBACK_PALETTE.length]
+}

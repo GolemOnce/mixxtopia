@@ -55,8 +55,6 @@
 스케줄 삭제	DELETE	/schedules/{schedule_id}	스케줄	admin,manager
 
 ### 참고
-- `GET /schedules`는 쿼리파라미터 `category`, `member`로 필터링 가능. 기본 정렬은 `start_at` 오름차순
-- "지난 일정 숨기기" 같은 필터는 아직 없음 — 달력/게시판 형태 화면을 실제로 만들 때 필요한 형태(날짜 범위 등)로 다시 추가 예정
 - category는 enum이 아니라 자유 문자열(자세한 사유는 db-schema.md 참고) — broadcast/award/festival/concert/fanmeeting/fansign/etc 등은 자동완성용 기본값일 뿐, 새 값도 그대로 등록 가능
 - 등록/수정 시 start_at > end_at이면 400
 - 삭제는 soft delete(BaseEntity의 deleted_at)
@@ -125,3 +123,13 @@
 - `POST /suggests`는 category가 항상 suggestion으로 고정됨(로그인한 유저의 일반 건의). report_* 카테고리는 각 도메인의 `/{도메인}/{id}/report`류 endpoint를 통해서만 생성됨(예: `POST /users/{user_id}/report`)
 - `POST /suggests/{suggest_id}`(처리 완료)는 상태를 무조건 done으로 전환(멱등)
 - 프론트에는 created_by/updated_by/deleted_by 비노출(내부 감사용, 다른 도메인과 동일)
+
+## link-preview(link_preview.py)
+링크 미리보기	GET	/link-preview	링크미리보기	all
+
+### 참고
+- 명세엔 없던 범용 endpoint — 일정/투표/오피셜 등 `link` 필드가 있는 도메인 전부에서 재사용(지금은 프론트의 Schedule 모달에서만 사용 중)
+- 쿼리파라미터 `url`(필수)로 받은 주소의 HTML을 서버에서 fetch해 OpenGraph 메타태그(og:title/og:description/og:image/og:site_name, 없으면 `<title>`로 대체)를 파싱해 반환
+- Mongo에 저장하지 않고 Redis에만 `link_preview:{url}` 키로 7일 캐싱(`app.service.link_preview`)
+- `http`/`https`가 아닌 scheme이거나 호스트가 없으면 400, 대상 URL fetch 실패(상태코드 400대 이상, 타임아웃, DNS 실패 등)면 502
+- 응답은 최대 1MB까지만 읽고, 타임아웃 5초, 리다이렉트 최대 3회로 제한(남용 방지)

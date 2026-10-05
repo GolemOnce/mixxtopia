@@ -11,7 +11,18 @@ from app.model.schedule import ensure_indexes as ensure_schedule_indexes
 from app.model.suggest import ensure_indexes as ensure_suggest_indexes
 from app.model.user import ensure_indexes as ensure_user_indexes
 from app.model.vote import ensure_indexes as ensure_vote_indexes
-from app.router import bustercall, comment, official, photo, post, schedule, suggest, user, vote
+from app.router import (
+    bustercall,
+    comment,
+    link_preview,
+    official,
+    photo,
+    post,
+    schedule,
+    suggest,
+    user,
+    vote,
+)
 
 app = FastAPI()
 
@@ -26,6 +37,7 @@ app.add_middleware(
 app.include_router(bustercall.router)
 app.include_router(user.auth_router)
 app.include_router(user.router)
+app.include_router(link_preview.router)
 app.include_router(official.router)
 app.include_router(schedule.router)
 app.include_router(vote.router)

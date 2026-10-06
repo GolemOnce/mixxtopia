@@ -1,0 +1,26 @@
+headless: false            # 처음엔 false로 브라우저 동작을 눈으로 확인
+session_path: session/state.json
+db_path: data/archive.db
+media_dir: data/media
+post_dir: data/posts
+
+max_scrolls: 20            # 첫 실행(백필) 때 최대 스크롤 횟수
+stall_limit: 3             # 스크롤해도 새 트윗이 안 나오면 N번 후 중단
+account_delay_sec: [20, 60]  # 계정 사이 랜덤 대기
+
+# mixxtopia DB(officials 컬렉션)에 바로 적재할지. .env의 MONGODB_URI/S3_* 설정을 사용.
+# false면 지금까지처럼 로컬 SQLite + data/posts/*.json 아카이빙까지만 하고 끝낸다.
+mixxtopia_sync:
+  enabled: true
+
+accounts:
+  - username: NMIXX_official
+    label: NMIXX 공식
+    official_account: nmixx_official   # app.model.official.OfficialAccount 값과 맞춰야 함
+    include_retweets: false
+    include_replies: false   # 다른 계정에 단 답글. 자기 타래는 항상 포함
+  - username: WE_NMIXX
+    label: WE_NMIXX
+    official_account: we_nmixx
+    include_retweets: false
+    include_replies: false

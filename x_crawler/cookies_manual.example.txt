@@ -1,0 +1,9 @@
+# Cookie Editor에서 클릭해서 본 Value 칸 내용을 = 뒤에 그대로 붙여넣으세요.
+# 따옴표/콤마 신경 쓸 필요 없음 — 한 줄에 키=값 하나씩.
+# auth_token, ct0는 필수. 나머지는 있으면 채우고 없으면 비워둬도 됩니다.
+auth_token=
+ct0=
+guest_id=
+twid=
+auth_multi=
+personalization_id=

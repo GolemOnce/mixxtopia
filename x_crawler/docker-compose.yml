@@ -1,0 +1,33 @@
+# x_crawler 로컬 테스트 전용 인프라(Mongo + LocalStack S3). 프로덕션(Atlas/실S3)과는 무관하고
+# 루트의 docker-compose.yml(배포용)과도 별개 — 여기서만 `docker compose up -d`로 띄운다.
+services:
+  mongo:
+    image: mongo:7
+    container_name: x-crawler-mongo
+    restart: unless-stopped
+    ports:
+      - "27018:27017"   # 로컬에 이미 mongod(27017)가 떠 있을 수 있어 다른 포트로 뺌
+    volumes:
+      - x-crawler-mongo-data:/data/db
+
+  s3:
+    # latest(2026.9+)는 Pro 라이선스를 요구해서 바로 죽는다 — 무료 커뮤니티 버전 고정.
+    image: localstack/localstack:3.0
+    container_name: x-crawler-s3
+    restart: unless-stopped
+    ports:
+      - "4566:4566"   # S3 호환 API (+ LocalStack 전체 서비스 게이트웨이)
+    environment:
+      SERVICES: s3
+    volumes:
+      - x-crawler-s3-data:/var/lib/localstack
+    ulimits:
+      # 기본 nofile 제한이 낮아서 크롤러가 한참 돌면 "Too many open files"로
+      # 응답을 아예 못 하게 멈춰버림(실제로 겪은 문제) — 넉넉하게 올려둠.
+      nofile:
+        soft: 65536
+        hard: 65536
+
+volumes:
+  x-crawler-mongo-data:
+  x-crawler-s3-data:

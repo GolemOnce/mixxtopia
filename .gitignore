@@ -24,5 +24,13 @@ x_index.html
 # scrapper
 /scrapping
 
+# crawler
+/x_crawler/session/
+/x_crawler/data/
+/x_crawler/__pycache__/
+/x_crawler/.venv
+/x_crawler/cookies_export.json
+/x_crawler/cookies_manual.txt
+
 # x_file
 /x_docs

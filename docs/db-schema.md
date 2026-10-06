@@ -46,7 +46,8 @@
 - link varchar(200) 링크
 - title	varchar(100)	제목
 - content	varchar(1000)	내용
-- photo_link varchar(200) 미디어 링크
+- photo_links varchar(200)[] 사진 링크(최대 4장 — X 자체 업로드 제한과 동일)
+- video_links varchar(200)[] 영상 링크(최대 4개, 동일한 로직)
 
 ### 참고
 - X(nmixx_official(공식계정), we_nmixx(멤버계정)) 엔믹스 공식 채널에 올라오는 트윗을 업로드하는 게시판
@@ -56,7 +57,8 @@
 - created_at은 등록(수동, 자동 모두)시간으로 기록, 게시판 노출은 posted_at 기준 (`YYYY.MM.DD HH:MM`)
 - created_by는 수동 등록 시 등록한 사람(UUID), 크롤링or스크래핑 등 자동 등록 시 auto
   - BaseEntity의 created_by(UUID 고정)와 달리 이 도메인만 UUID|str로 타입을 넓힘(`app/model/official.py`)
-- 미디어 링크는 photo 게시판과 경로 매칭(nullable)
+- 미디어 링크는 photo 게시판과 경로 매칭. 둘 다 빈 배열 가능(미디어 없는 트윗)
+- x_crawler는 트윗의 사진/영상 원본을 전부 S3에 올리고, 타입별로 photo_links/video_links에 나눠 담는다
 - account는 자유 문자열이 아니라 enum(`OfficialAccount`: nmixx_official, we_nmixx)으로 관리 — 프론트 전체/공트/멤트 탭 분기에 코드가 그 값을 직접 참조하기 때문
 
 ## votes(vote.py)

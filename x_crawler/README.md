@@ -39,9 +39,9 @@ s3_upload.py       다운로드한 사진/영상 전부를 S3/로컬 S3 호환 �
 
 ## mixxtopia 연동
 `config.yaml`의 `mixxtopia_sync.enabled: true`면, 새 트윗을 처리할 때마다
-(1) 그 트윗의 사진·영상 원본을 전부 S3에 업로드하고(로컬 디스크에만 남기지 않음, 사진은
-`photo_links`에 최대 4장까지 담고 영상은 S3엔 올라가되 DB엔 안 걸림) (2) `officials`
-컬렉션에 바로 문서를 insert한다.
+(1) 그 트윗의 사진·영상 원본을 전부 S3에 업로드하고(로컬 디스크에만 남기지 않음, 타입별로
+`photo_links`/`video_links`에 각각 최대 4개까지 담음) (2) `officials` 컬렉션에 바로
+문서를 insert한다.
 `docs/api-spec.md` 정책대로 `POST /api/officials` API를 거치지 않고 DB에 직접 적재하며,
 `created_by`는 UUID 대신 문자열 `"auto"`를 쓴다(`app.model.official.Official.created_by`가
 이를 위해 `UUID | str`로 넓혀져 있음). 문서 포맷은 백엔드가 실제로 만드는 것과 동일하게

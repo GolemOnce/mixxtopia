@@ -32,7 +32,8 @@
 ### 참고
 - `GET /officials`는 쿼리파라미터 `account`(nmixx_official/we_nmixx), `page`, `page_size`(기본 20)로 필터링/페이지네이션. `posted_at` 내림차순(최신순) 정렬 — created_at이 아니라 실제 X 업로드 시각 기준
 - account는 코드에서 분기(프론트 전체/공트/멤트 탭 구분)에 쓰여서 자유 문자열이 아니라 enum(`OfficialAccount`)으로 강제
-- 수동 등록만 이 API로 가능. 크롤링/스크래핑 자동 등록은 별도 배치 스크립트가 DB에 직접 적재할 예정(이 때 created_by는 UUID 대신 문자열 "auto")
+- 수동 등록만 이 API로 가능. 크롤링/스크래핑 자동 등록은 `x_crawler/`(별도 배치 스크립트)가 이 API를 거치지 않고 DB에 직접 적재한다(이 때 created_by는 UUID 대신 문자열 "auto") — `x_crawler/mongo_sync.py`, 사용법은 `x_crawler/README.md` 참고
+- `photo_links`/`video_links`는 각각 문자열 배열(최대 4개, X 자체 업로드 제한과 동일). 빈 배열이면 해당 미디어 없는 트윗
 - 작성/수정/삭제 권한은 vote와 동일하게 owner 개념 없이 admin/manager만
 
 ## votes(vote.py)

@@ -42,7 +42,7 @@ async def create_official(payload: OfficialCreateRequest, created_by: UUID) -> d
         link=payload.link,
         title=payload.title,
         content=payload.content,
-        photo_link=payload.photo_link,
+        photo_links=payload.photo_links,
         created_by=created_by,
     )
     doc = official.model_dump(mode="json")

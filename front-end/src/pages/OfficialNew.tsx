@@ -14,7 +14,7 @@ export default function OfficialNew() {
   const [link, setLink] = useState('')
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [photoLink, setPhotoLink] = useState('')
+  const [photoLinks, setPhotoLinks] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
   const [formSuccess, setFormSuccess] = useState<string | null>(null)
@@ -34,7 +34,7 @@ export default function OfficialNew() {
     setLink('')
     setTitle('')
     setContent('')
-    setPhotoLink('')
+    setPhotoLinks('')
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -49,7 +49,10 @@ export default function OfficialNew() {
         link,
         title,
         content,
-        photo_link: photoLink || null,
+        photo_links: photoLinks
+          .split(',')
+          .map((p) => p.trim())
+          .filter(Boolean),
       })
       setFormSuccess('오피셜 게시글을 등록했습니다.')
       resetForm()
@@ -120,11 +123,11 @@ export default function OfficialNew() {
         </div>
         <div className="row">
           <label>
-            미디어 링크(선택){' '}
+            미디어 링크(선택, 쉼표로 구분, 최대 4개){' '}
             <input
-              value={photoLink}
-              onChange={(e) => setPhotoLink(e.target.value)}
-              maxLength={200}
+              value={photoLinks}
+              onChange={(e) => setPhotoLinks(e.target.value)}
+              placeholder="https://..., https://..."
             />
           </label>
         </div>

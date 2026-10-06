@@ -13,7 +13,7 @@ interface OfficialItem {
   link: string
   title: string
   content: string
-  photo_link: string | null
+  photo_links: string[]
   created_at: string
   updated_at: string | null
 }
@@ -97,9 +97,11 @@ export default function OfficialDetail() {
       {!editing && (
         <>
           <pre>{item.content}</pre>
-          {item.photo_link && (
-            <div className="row">
-              <img src={item.photo_link} alt={item.title} style={{ maxWidth: '100%' }} />
+          {item.photo_links.length > 0 && (
+            <div className="official-photo-gallery">
+              {item.photo_links.map((url) => (
+                <img key={url} src={url} alt={item.title} />
+              ))}
             </div>
           )}
           <div className="row">

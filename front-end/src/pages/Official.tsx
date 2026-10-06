@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { api, authErrorMessage } from '../api/client'
 import { useCurrentUser } from '../auth/useCurrentUser'
+import BoardTable, { type BoardTableColumn } from '../components/BoardTable'
 import { formatBoardDate } from '../lib/date'
 import { getPaginationRange } from '../lib/pagination'
 import {
@@ -18,7 +19,7 @@ interface OfficialItem {
   link: string
   title: string
   content: string
-  photo_link: string | null
+  photo_links: string[]
   created_at: string
   updated_at: string | null
 }
@@ -78,6 +79,28 @@ export default function Official() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const pageTokens = getPaginationRange(page, totalPages)
 
+  const officialColumns: BoardTableColumn<OfficialItem>[] = [
+    {
+      key: 'num',
+      label: '번호',
+      className: 'board-col-num',
+      render: (_item, i) => displayNumberOf(i),
+    },
+    {
+      key: 'category',
+      label: '계정',
+      className: 'board-col-category',
+      render: (item) => OFFICIAL_ACCOUNT_LABELS[item.account],
+    },
+    { key: 'title', label: '제목', className: 'board-col-title', render: (item) => item.title },
+    {
+      key: 'date',
+      label: '업로드일',
+      className: 'board-col-date',
+      render: (item) => formatBoardDate(item.posted_at),
+    },
+  ]
+
   return (
     <div className="page-with-sidebar">
       <div className="card">
@@ -103,52 +126,16 @@ export default function Official() {
 
         {loading && <div className="muted">불러오는 중...</div>}
         {listError && <div className="muted warn">{listError}</div>}
-        {!loading && !listError && items.length === 0 && (
-          <div className="muted">등록된 게시글이 없습니다.</div>
-        )}
 
-        {!loading && !listError && items.length > 0 && (
-          <>
-            <table className="board-table">
-              <thead>
-                <tr>
-                  <th className="board-col-num">번호</th>
-                  <th className="board-col-category">계정</th>
-                  <th className="board-col-title">제목</th>
-                  <th className="board-col-date">업로드일</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item, i) => (
-                  <tr key={item.official_id}>
-                    <td className="board-col-num muted">{displayNumberOf(i)}</td>
-                    <td className="board-col-category muted">
-                      {OFFICIAL_ACCOUNT_LABELS[item.account]}
-                    </td>
-                    <td className="board-col-title">
-                      <Link to={`/official/${item.official_id}`}>{item.title}</Link>
-                    </td>
-                    <td className="board-col-date muted">{formatBoardDate(item.posted_at)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            <div className="board-list">
-              {items.map((item) => (
-                <Link
-                  to={`/official/${item.official_id}`}
-                  className="board-list-item"
-                  key={item.official_id}
-                >
-                  <div className="board-list-title">{item.title}</div>
-                  <div className="muted board-list-meta">
-                    {OFFICIAL_ACCOUNT_LABELS[item.account]} · {formatBoardDate(item.posted_at)}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </>
+        {!loading && !listError && (
+          <BoardTable
+            items={items}
+            columns={officialColumns}
+            titleColumnKey="title"
+            rowKey={(item) => item.official_id}
+            linkTo={(item) => `/official/${item.official_id}`}
+            emptyMessage="등록된 게시글이 없습니다."
+          />
         )}
 
         <div className="board-toolbar">

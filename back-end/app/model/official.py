@@ -30,7 +30,7 @@ class Official(BaseEntity):
     link: str = Field(max_length=200)
     title: str = Field(min_length=1, max_length=100)
     content: str = Field(min_length=1, max_length=1000)
-    photo_link: str | None = Field(default=None, max_length=200)
+    photo_links: list[str] = Field(default_factory=list, max_length=4)  # 트윗당 최대 4장
     created_by: UUID | str
 
     @classmethod

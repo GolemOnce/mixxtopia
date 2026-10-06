@@ -12,6 +12,7 @@ class OfficialCreateRequest(BaseModel):
     title: str = Field(min_length=1, max_length=100)
     content: str = Field(min_length=1, max_length=1000)
     photo_links: list[str] = Field(default_factory=list, max_length=4)
+    video_links: list[str] = Field(default_factory=list, max_length=4)
 
 
 class OfficialUpdateRequest(BaseModel):
@@ -21,6 +22,7 @@ class OfficialUpdateRequest(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=100)
     content: str | None = Field(default=None, min_length=1, max_length=1000)
     photo_links: list[str] | None = Field(default=None, max_length=4)
+    video_links: list[str] | None = Field(default=None, max_length=4)
 
 
 class OfficialResponse(BaseModel):
@@ -31,6 +33,7 @@ class OfficialResponse(BaseModel):
     title: str
     content: str
     photo_links: list[str] = Field(default_factory=list)
+    video_links: list[str] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime | None = None
 

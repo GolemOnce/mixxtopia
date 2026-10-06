@@ -38,15 +38,21 @@ async def sync_to_mixxtopia(
         return
 
     # 원본은 전부(사진+영상) S3에 올려서 로컬 디스크에만 의존하지 않게 한다.
-    # officials.photo_links는 그중 사진 URL만(최대 4장 — X 자체 업로드 제한과 동일).
+    # officials.photo_links/video_links는 타입별로 나눠 담는다(각각 최대 4개 —
+    # X 자체 업로드 제한과 동일. animated_gif도 parser.py에서 이미 mp4로 받아와서 영상 취급).
     photo_links = []
+    video_links = []
     for i, media, local_path in files:
         key = f"{tweet.username}/{tweet.id}_{i}.{media.ext}"
         url = s3_upload.upload_file(local_path, key)
         if media.type == "photo":
             photo_links.append(url)
+        else:
+            video_links.append(url)
 
-    await mongo_sync.insert_official(tweet, official_account, title, tweet.text, photo_links[:4])
+    await mongo_sync.insert_official(
+        tweet, official_account, title, tweet.text, photo_links[:4], video_links[:4]
+    )
 
 
 async def process_account(

@@ -46,7 +46,12 @@ async def official_exists(tweet_id: str) -> bool:
 
 
 async def insert_official(
-    tweet: Tweet, official_account: str, title: str, content: str, photo_links: list[str]
+    tweet: Tweet,
+    official_account: str,
+    title: str,
+    content: str,
+    photo_links: list[str],
+    video_links: list[str],
 ) -> dict:
     doc = {
         "_id": str(uuid4()),
@@ -56,6 +61,7 @@ async def insert_official(
         "title": title[:100],
         "content": (content or "(본문 없음)")[:1000],
         "photo_links": photo_links[:4],  # app.model.official.Official과 동일하게 최대 4장
+        "video_links": video_links[:4],
         "created_at": _iso(datetime.now(timezone.utc)),
         "created_by": "auto",
         "updated_at": None,

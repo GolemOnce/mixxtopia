@@ -23,6 +23,7 @@ def _to_response(doc: dict) -> OfficialResponse:
         title=doc["title"],
         content=doc["content"],
         photo_links=doc.get("photo_links", []),
+        video_links=doc.get("video_links", []),
         created_at=doc["created_at"],
         updated_at=doc.get("updated_at"),
     )

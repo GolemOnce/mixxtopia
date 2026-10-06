@@ -15,6 +15,7 @@ export default function OfficialNew() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [photoLinks, setPhotoLinks] = useState('')
+  const [videoLinks, setVideoLinks] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
   const [formSuccess, setFormSuccess] = useState<string | null>(null)
@@ -35,6 +36,7 @@ export default function OfficialNew() {
     setTitle('')
     setContent('')
     setPhotoLinks('')
+    setVideoLinks('')
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -52,6 +54,10 @@ export default function OfficialNew() {
         photo_links: photoLinks
           .split(',')
           .map((p) => p.trim())
+          .filter(Boolean),
+        video_links: videoLinks
+          .split(',')
+          .map((v) => v.trim())
           .filter(Boolean),
       })
       setFormSuccess('오피셜 게시글을 등록했습니다.')
@@ -123,10 +129,20 @@ export default function OfficialNew() {
         </div>
         <div className="row">
           <label>
-            미디어 링크(선택, 쉼표로 구분, 최대 4개){' '}
+            사진 링크(선택, 쉼표로 구분, 최대 4개){' '}
             <input
               value={photoLinks}
               onChange={(e) => setPhotoLinks(e.target.value)}
+              placeholder="https://..., https://..."
+            />
+          </label>
+        </div>
+        <div className="row">
+          <label>
+            영상 링크(선택, 쉼표로 구분, 최대 4개){' '}
+            <input
+              value={videoLinks}
+              onChange={(e) => setVideoLinks(e.target.value)}
               placeholder="https://..., https://..."
             />
           </label>

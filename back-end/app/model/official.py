@@ -31,6 +31,7 @@ class Official(BaseEntity):
     title: str = Field(min_length=1, max_length=100)
     content: str = Field(min_length=1, max_length=1000)
     photo_links: list[str] = Field(default_factory=list, max_length=4)  # 트윗당 최대 4장
+    video_links: list[str] = Field(default_factory=list, max_length=4)
     created_by: UUID | str
 
     @classmethod

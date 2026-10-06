@@ -20,6 +20,7 @@ interface OfficialItem {
   title: string
   content: string
   photo_links: string[]
+  video_links: string[]
   created_at: string
   updated_at: string | null
 }

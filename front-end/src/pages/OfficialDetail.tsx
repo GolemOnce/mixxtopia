@@ -14,6 +14,7 @@ interface OfficialItem {
   title: string
   content: string
   photo_links: string[]
+  video_links: string[]
   created_at: string
   updated_at: string | null
 }
@@ -101,6 +102,13 @@ export default function OfficialDetail() {
             <div className="official-photo-gallery">
               {item.photo_links.map((url) => (
                 <img key={url} src={url} alt={item.title} />
+              ))}
+            </div>
+          )}
+          {item.video_links.length > 0 && (
+            <div className="official-photo-gallery">
+              {item.video_links.map((url) => (
+                <video key={url} src={url} controls />
               ))}
             </div>
           )}

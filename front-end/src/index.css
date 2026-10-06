@@ -56,12 +56,28 @@ body {
   display: flex;
   align-items: flex-start;
   gap: 24px;
+  min-height: 720px;
+  max-height: 720px;
   max-width: var(--content-width);
   margin: 0 auto;
 }
 
 .page-with-sidebar > .card {
   flex: 7 1 0;
+  max-width: none;
+  margin: 0;
+}
+
+/* 본문 쪽에 카드를 세로로 여러 개 쌓아야 할 때(예: 게시글 상세 + 그 아래 게시판 목록) */
+.page-with-sidebar > .page-main {
+  flex: 7 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.page-main > .card {
   max-width: none;
   margin: 0;
 }
@@ -511,6 +527,16 @@ h3 {
 
 .board-table tbody tr:hover {
   background: #faf9ff;
+}
+
+.board-table-empty {
+  padding: 32px 8px;
+  text-align: center;
+}
+
+.board-list-empty {
+  padding: 24px 0;
+  text-align: center;
 }
 
 /* th/td 둘 다 같은 클래스로 정렬을 주되, 브라우저 기본값(th는 가운데, td는 왼쪽)에
@@ -1144,4 +1170,19 @@ h2 {
   margin-top: 12px;
   font-size: 13px;
   word-break: break-all;
+}
+
+/* 오피셜 상세 사진/영상 갤러리 — 트윗당 최대 4개 */
+.official-photo-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.official-photo-gallery img,
+.official-photo-gallery video {
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
 }

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 
 import { api, authErrorMessage } from '../api/client'
 import { useCurrentUser } from '../auth/useCurrentUser'
+import BoardList from '../components/BoardList'
 import { POST_CATEGORIES, POST_CATEGORY_LABELS, type PostCategory } from '../lib/postCategories'
 
 interface PostResponse {
@@ -37,52 +38,66 @@ export default function BoardNew() {
   }
 
   return (
-    <div className="card">
-      <h1>글쓰기</h1>
-      <form onSubmit={handleSubmit}>
-        <div className="row">
-          <label>
-            종류{' '}
-            <select value={category} onChange={(e) => setCategory(e.target.value as PostCategory)}>
-              {writableCategories.map((c) => (
-                <option key={c} value={c}>
-                  {POST_CATEGORY_LABELS[c]}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            제목{' '}
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              maxLength={100}
-              required
-            />
-          </label>
-        </div>
-        <div className="row">
-          <label>
-            내용{' '}
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              maxLength={1000}
-              required
-            />
-          </label>
-        </div>
-        <div className="row">
-          <button className="primary" type="submit" disabled={submitting}>
-            {submitting ? '등록 중...' : '등록'}
-          </button>
-        </div>
-      </form>
-      {formError && <div className="muted warn">{formError}</div>}
+    <div className="page-with-sidebar">
+      <div className="page-main">
+        <div className="card">
+          <h1>글쓰기</h1>
+          <form onSubmit={handleSubmit}>
+            <div className="row">
+              <label>
+                종류{' '}
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value as PostCategory)}
+                >
+                  {writableCategories.map((c) => (
+                    <option key={c} value={c}>
+                      {POST_CATEGORY_LABELS[c]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                제목{' '}
+                <input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  maxLength={100}
+                  required
+                />
+              </label>
+            </div>
+            <div className="row">
+              <label>
+                내용{' '}
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  maxLength={1000}
+                  required
+                />
+              </label>
+            </div>
+            <div className="row">
+              <button className="primary" type="submit" disabled={submitting}>
+                {submitting ? '등록 중...' : '등록'}
+              </button>
+            </div>
+          </form>
+          {formError && <div className="muted warn">{formError}</div>}
 
-      <div className="row">
-        <Link to="/board">목록으로</Link>
+          <div className="row">
+            <Link to="/board">목록으로</Link>
+          </div>
+        </div>
+
+        <div className="card">
+          <BoardList />
+        </div>
       </div>
+
+      {/* 임시 자리 — 나중에 다른 콘텐츠 들어갈 공간 */}
+      <div className="page-sidebar" />
     </div>
   )
 }

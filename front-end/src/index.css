@@ -1,8 +1,32 @@
 @font-face {
   font-family: 'Pretendard';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Regular.woff2')
+    format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pretendard';
   src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Medium.woff2')
     format('woff2');
   font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-SemiBold.woff2')
+    format('woff2');
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Bold.woff2')
+    format('woff2');
+  font-weight: 700;
   font-display: swap;
 }
 
@@ -132,6 +156,8 @@ button.primary {
 }
 
 pre {
+  /* 브라우저 기본은 pre에 monospace를 강제로 입혀서 body의 Pretendard가 안 먹었었다. */
+  font-family: inherit;
   white-space: pre-wrap;
   word-break: break-word;
   background: #f7f7f7;
@@ -832,6 +858,25 @@ h2 {
   padding: 24px;
 }
 
+/* 사진 확대 보기 — 전체화면이 아니라 화면 절반 정도 크기로만. */
+.modal-panel-photo {
+  width: 75vw;
+  height: 90vh;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 64px);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-panel-photo img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
 .modal-close {
   position: absolute;
   top: 16px;
@@ -1233,6 +1278,10 @@ h2 {
   object-fit: cover;
 }
 
+.official-photo-clickable {
+  cursor: zoom-in;
+}
+
 @media (max-width: 640px) {
   .official-photo-gallery img,
   .official-photo-gallery video {
@@ -1240,17 +1289,31 @@ h2 {
   }
 }
 
-/* 사진/영상이 한 장뿐이면 높이 통일·크롭 없이 원본 비율 그대로 폭에 맞춰 보여준다. */
+/* 사진/영상이 한 장뿐이면 크롭 없이 원본 비율 그대로 보여주되, 세로로 긴 사진/영상이
+   화면을 꽉 채워버리지 않도록 높이 상한만 둔다(전체화면 전 기본 표시 크기). */
 .official-photo-gallery img:only-child,
 .official-photo-gallery video:only-child {
   height: auto;
-  max-height: none;
-  width: 100%;
+  width: auto;
+  max-width: 100%;
+  max-height: 720px;
 }
 
 @media (max-width: 640px) {
   .official-photo-gallery img:only-child,
   .official-photo-gallery video:only-child {
-    height: auto;
+    max-height: 360px;
   }
+}
+
+/* 영상 전체화면일 때는 갤러리용 크롭(object-fit: cover)이 그대로 적용되면 화면(가로로
+   넓은 박스)에 맞춰 짧은 쪽(폭) 기준으로 꽉 채우면서 긴 쪽(세로 영상이면 세로)이 잘린다.
+   전체화면에서는 항상 원본 비율 그대로 안 잘리게(contain) 보여준다. */
+.official-photo-gallery video:fullscreen,
+.official-photo-gallery video:-webkit-full-screen {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: contain;
 }

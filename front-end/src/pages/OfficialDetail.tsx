@@ -4,6 +4,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { api, authErrorMessage } from '../api/client'
 import { useCurrentUser } from '../auth/useCurrentUser'
 import LinkPreview from '../components/LinkPreview'
+import Modal from '../components/Modal'
 import { formatDate } from '../lib/date'
 import { OFFICIAL_ACCOUNT_LABELS, type OfficialAccount } from '../lib/officialAccounts'
 import LinkifiedText from '../components/LinkifiedText'
@@ -31,6 +32,7 @@ export default function OfficialDetail() {
   const [item, setItem] = useState<OfficialItem | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
 
   const [editing, setEditing] = useState(false)
   const [editTitle, setEditTitle] = useState('')
@@ -129,7 +131,13 @@ export default function OfficialDetail() {
               {item.photo_links.length > 0 && (
                 <div className="official-photo-gallery">
                   {item.photo_links.map((url) => (
-                    <img key={url} src={url} alt={item.title} />
+                    <img
+                      key={url}
+                      src={url}
+                      alt={item.title}
+                      onClick={() => setLightboxUrl(url)}
+                      className="official-photo-clickable"
+                    />
                   ))}
                 </div>
               )}
@@ -198,6 +206,12 @@ export default function OfficialDetail() {
 
       {/* 임시 자리 — 나중에 다른 콘텐츠 들어갈 공간 */}
       <div className="page-sidebar" />
+
+      {lightboxUrl && (
+        <Modal onClose={() => setLightboxUrl(null)} panelClassName="modal-panel-photo">
+          <img src={lightboxUrl} alt={item.title} />
+        </Modal>
+      )}
     </div>
   )
 }

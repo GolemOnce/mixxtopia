@@ -25,6 +25,7 @@
 ## officials(official.py)
 오피셜 목록 조회	GET	/officials	오피셜	all
 오피셜 상세 조회	GET	/officials/{official_id}	오피셜	all
+오피셜 글의 페이지 조회	GET	/officials/{official_id}/page	오피셜	all
 오피셜 작성	POST	/officials	오피셜	admin,manager
 오피셜 수정	PATCH	/officials/{official_id}	오피셜	admin,manager
 오피셜 삭제	DELETE	/officials/{official_id}	오피셜	admin,manager
@@ -35,6 +36,7 @@
 - 수동 등록만 이 API로 가능. 크롤링/스크래핑 자동 등록은 `x_crawler/`(별도 배치 스크립트)가 이 API를 거치지 않고 DB에 직접 적재한다(이 때 created_by는 UUID 대신 문자열 "auto") — `x_crawler/mongo_sync.py`, 사용법은 `x_crawler/README.md` 참고
 - `photo_links`/`video_links`는 각각 문자열 배열(최대 4개, X 자체 업로드 제한과 동일). 빈 배열이면 해당 미디어 없는 트윗
 - 작성/수정/삭제 권한은 vote와 동일하게 owner 개념 없이 admin/manager만
+- `GET /officials/{official_id}/page`는 쿼리파라미터 `page_size`(기본 30, `GET /officials` 호출 때 쓰는 값과 맞춰야 함)로, 그 글이 "전체" 탭·`posted_at` 내림차순 기준 몇 페이지에 있는지 반환(`{"page": N}`). 상세 페이지 하단에 목록을 보여줄 때 그 글이 있는 페이지로 바로 맞추는 용도
 
 ## votes(vote.py)
 투표 목록 조회	GET	/votes	투표	all
@@ -70,6 +72,7 @@
 ## posts(post.py)
 게시글 목록 조회	GET	/posts	게시글	all
 게시글 상세 조회	GET	/posts/{post_id}	게시글	all
+게시글의 페이지 조회	GET	/posts/{post_id}/page	게시글	all
 게시글 작성	POST	/posts	게시글	admin,manager,user
 게시글 수정	PATCH	/posts/{post_id}	게시글	admin,manager,owner
 게시글 삭제	DELETE	/posts/{post_id}	게시글	admin,manager,owner
@@ -82,6 +85,7 @@
 - 작성 시점 IP를 access_logs에 기록(`action=post_create`)
 - category는 변경 불가(PATCH 대상에서 제외) — post_num이 category별로 매겨지므로 카테고리 이동은 새 글 작성으로 처리
 - 조회수(view_count): `GET /posts/{post_id}` 호출 시 조회자(로그인 유저면 user_id, 아니면 IP)당 24시간에 한 번만 증가. `GET /posts`(목록)는 증가시키지 않음
+- `GET /posts/{post_id}/page`는 쿼리파라미터 `page_size`(기본 30)로, 그 글이 "전체" 탭·`created_at` 내림차순 기준 몇 페이지에 있는지 반환(`{"page": N}`). 비건의글 제외 여부도 목록 조회와 동일하게 로그인 role에 따라 결정(officials의 동일 엔드포인트 참고)
 - 목록 응답의 각 항목엔 `display_num`(카테고리 구분 없는 "전체" 탭 전용 가상 번호, `total - (page-1)*page_size - index`로 매 요청 계산)도 같이 내려감 — 특정 category로 필터링했을 때는 프론트에서 `post_num`을 쓰고, `category` 없이 전체 조회했을 때만 `display_num`을 쓰면 됨. 상세 조회(`GET /posts/{post_id}`) 응답에서는 항상 null
 
 ## comments(comment.py)

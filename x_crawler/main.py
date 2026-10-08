@@ -92,7 +92,7 @@ async def process_account(
         if not skip and not store.exists(t.id):
             try:
                 files = await download_all(t, BASE_DIR / cfg["media_dir"], http)
-                post = build_post(t, files, acc["label"])
+                post = build_post(t, files)
                 if sync_enabled:
                     await sync_to_mixxtopia(t, files, acc.get("official_account"), post["title"])
             except Exception as e:

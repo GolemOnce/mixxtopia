@@ -19,7 +19,6 @@ BASE_DIR = Path(__file__).resolve().parent
 
 def main() -> None:
     cfg = yaml.safe_load((BASE_DIR / "config.yaml").read_text(encoding="utf-8"))
-    labels = {a["username"]: a["label"] for a in cfg["accounts"]}
 
     conn = sqlite3.connect(str(BASE_DIR / cfg["db_path"]))
     conn.row_factory = sqlite3.Row
@@ -50,8 +49,7 @@ def main() -> None:
             for m in media_rows
         ]
 
-        label = labels.get(tweet.username, tweet.username)
-        post = build_post(tweet, files, label)
+        post = build_post(tweet, files)
         save_post(post, BASE_DIR / cfg["post_dir"])
         regenerated += 1
 

@@ -6,6 +6,7 @@ from app.model.user import User, UserRole
 from app.schemas.official import (
     OfficialCreateRequest,
     OfficialListResponse,
+    OfficialPageResponse,
     OfficialResponse,
     OfficialUpdateRequest,
 )
@@ -37,6 +38,17 @@ async def list_officials(
     return OfficialListResponse(
         items=[_to_response(doc) for doc in docs], total=total, page=page, page_size=page_size
     )
+
+
+@router.get("/{official_id}/page", response_model=OfficialPageResponse)
+async def get_official_page(official_id: str, page_size: int = 30):
+    """오피셜 상세 하단에 목록을 붙일 때, 이 글이 있는 페이지로 바로 맞추기 위한 용도
+    (프론트의 OfficialList가 URL의 page 쿼리스트링을 읽어서 씀)."""
+    try:
+        page = await official_service.get_official_page(official_id, page_size)
+    except official_service.OfficialNotFoundError as exc:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "오피셜 게시글을 찾을 수 없습니다.") from exc
+    return OfficialPageResponse(page=page)
 
 
 @router.get("/{official_id}", response_model=OfficialResponse)

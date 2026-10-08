@@ -27,6 +27,19 @@ async def list_officials(
     return docs, total
 
 
+async def get_official_page(official_id: str, page_size: int) -> int:
+    """list_officials와 같은 정렬(posted_at desc) 기준으로, 이 글이 몇 페이지에 있는지
+    계산한다. posted_at이 ISO 문자열로 저장돼 있어 문자열 비교로도 시간 순서와 일치한다."""
+    doc = await officials_col.find_one({"_id": official_id, "deleted_at": None})
+    if not doc:
+        raise OfficialNotFoundError()
+
+    rank = await officials_col.count_documents(
+        {"deleted_at": None, "posted_at": {"$gt": doc["posted_at"]}}
+    )
+    return rank // page_size + 1
+
+
 async def get_official(official_id: str) -> dict:
     doc = await officials_col.find_one({"_id": official_id, "deleted_at": None})
     if not doc:

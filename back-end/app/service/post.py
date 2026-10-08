@@ -61,6 +61,20 @@ async def list_posts(
     return docs, total
 
 
+async def get_post_page(post_id: str, page_size: int, exclude_suggestion: bool) -> int:
+    """list_posts와 같은 정렬(created_at desc)·필터 기준으로, 이 글이 몇 페이지에
+    있는지 계산한다. 이 글보다 최신(created_at이 더 큰) 글 개수가 곧 0-based 순위."""
+    doc = await posts_col.find_one({"_id": post_id, "deleted_at": None})
+    if not doc:
+        raise PostNotFoundError()
+
+    query: dict = {"deleted_at": None, "created_at": {"$gt": doc["created_at"]}}
+    if exclude_suggestion:
+        query["category"] = {"$ne": PostCategory.suggestion.value}
+    rank = await posts_col.count_documents(query)
+    return rank // page_size + 1
+
+
 async def get_post(post_id: str, viewer_key: str) -> dict:
     doc = await posts_col.find_one({"_id": post_id, "deleted_at": None})
     if not doc:

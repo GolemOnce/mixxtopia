@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import { api, authErrorMessage } from '../api/client'
-import BoardList from '../components/BoardList'
+import BoardList, { PAGE_SIZE } from '../components/BoardList'
 import { formatDate } from '../lib/date'
 import { POST_CATEGORY_LABELS, type PostCategory } from '../lib/postCategories'
 
@@ -42,6 +42,7 @@ const COMMENT_PAGE_SIZE = 20
 export default function BoardPost() {
   const { postId } = useParams<{ postId: string }>()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const [post, setPost] = useState<PostItem | null>(null)
   const [postError, setPostError] = useState<string | null>(null)
@@ -112,6 +113,28 @@ export default function BoardPost() {
     loadComments()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId, commentSort, commentPage])
+
+  // 아래 목록(BoardList)이 URL의 page 쿼리스트링을 읽으므로, 그 값이 아직 없을 때만
+  // "이 글이 몇 페이지에 있는지" 백엔드에 물어서 채워준다. 이미 있으면(직접 링크로 들어왔거나
+  // 목록에서 페이지를 넘긴 뒤 돌아온 경우) 사용자가 보던 페이지를 그대로 둔다.
+  useEffect(() => {
+    if (!postId || searchParams.has('page')) return
+    api
+      .get<{ page: number }>(`/api/posts/${postId}/page?page_size=${PAGE_SIZE}`)
+      .then(({ page }) => {
+        if (page <= 1) return
+        setSearchParams(
+          (prev) => {
+            const next = new URLSearchParams(prev)
+            next.set('page', String(page))
+            return next
+          },
+          { replace: true },
+        )
+      })
+      .catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [postId])
 
   async function handleDeletePost() {
     if (!postId) return

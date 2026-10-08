@@ -3,7 +3,13 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from app.core.deps import get_client_ip, get_current_user, get_current_user_optional
 from app.model.post import PostCategory
 from app.model.user import User, UserRole
-from app.schemas.post import PostCreateRequest, PostListResponse, PostResponse, PostUpdateRequest
+from app.schemas.post import (
+    PostCreateRequest,
+    PostListResponse,
+    PostPageResponse,
+    PostResponse,
+    PostUpdateRequest,
+)
 from app.service import post as post_service
 
 router = APIRouter(prefix="/api/posts", tags=["post"])
@@ -47,6 +53,24 @@ async def list_posts(
     base_num = total - (page - 1) * page_size
     items = [_to_response(doc, display_num=base_num - i) for i, doc in enumerate(docs)]
     return PostListResponse(items=items, total=total, page=page, page_size=page_size)
+
+
+@router.get("/{post_id}/page", response_model=PostPageResponse)
+async def get_post_page(
+    post_id: str,
+    page_size: int = 30,
+    current_user: User | None = Depends(get_current_user_optional),
+):
+    """게시글 상세 하단에 "다른 글" 목록을 붙일 때, 이 글이 있는 페이지로 바로
+    맞추기 위한 용도(프론트의 BoardList가 URL의 page 쿼리스트링을 읽어서 씀)."""
+    privileged = _is_privileged(current_user)
+    try:
+        page = await post_service.get_post_page(
+            post_id, page_size, exclude_suggestion=not privileged
+        )
+    except post_service.PostNotFoundError as exc:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "게시글을 찾을 수 없습니다.") from exc
+    return PostPageResponse(page=page)
 
 
 @router.get("/{post_id}", response_model=PostResponse)

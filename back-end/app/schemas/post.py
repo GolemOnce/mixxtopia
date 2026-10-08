@@ -37,3 +37,8 @@ class PostListResponse(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+class PostPageResponse(BaseModel):
+    # 이 글이 /api/posts 목록(해당 page_size 기준, "전체" 탭 정렬)에서 몇 페이지에 있는지.
+    page: int

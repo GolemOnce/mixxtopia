@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import { api, authErrorMessage } from '../api/client'
 import { useCurrentUser } from '../auth/useCurrentUser'
 import LinkPreview from '../components/LinkPreview'
 import { formatDate } from '../lib/date'
 import { OFFICIAL_ACCOUNT_LABELS, type OfficialAccount } from '../lib/officialAccounts'
+import OfficialList, { PAGE_SIZE } from '../components/OfficialList'
 
 interface OfficialItem {
   official_id: string
@@ -24,6 +25,7 @@ export default function OfficialDetail() {
   const { officialId } = useParams<{ officialId: string }>()
   const navigate = useNavigate()
   const { isAdmin } = useCurrentUser()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const [item, setItem] = useState<OfficialItem | null>(null)
   const [loading, setLoading] = useState(true)
@@ -53,6 +55,28 @@ export default function OfficialDetail() {
 
   useEffect(() => {
     load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [officialId])
+
+  // 아래 목록(OfficialList)이 URL의 page 쿼리스트링을 읽으므로, 그 값이 아직 없을 때만
+  // "이 글이 몇 페이지에 있는지" 백엔드에 물어서 채워준다. 이미 있으면 사용자가 보던
+  // 페이지를 그대로 둔다.
+  useEffect(() => {
+    if (!officialId || searchParams.has('page')) return
+    api
+      .get<{ page: number }>(`/api/officials/${officialId}/page?page_size=${PAGE_SIZE}`)
+      .then(({ page }) => {
+        if (page <= 1) return
+        setSearchParams(
+          (prev) => {
+            const next = new URLSearchParams(prev)
+            next.set('page', String(page))
+            return next
+          },
+          { replace: true },
+        )
+      })
+      .catch(() => {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [officialId])
 
@@ -88,80 +112,91 @@ export default function OfficialDetail() {
   if (!item) return null
 
   return (
-    <div className="card">
-      <div className="muted">{OFFICIAL_ACCOUNT_LABELS[item.account]}</div>
-      <h1>{item.title}</h1>
-      <div className="muted">
-        {formatDate(item.posted_at)}
-        {item.updated_at && ' (수정됨)'}
+    <div className="page-with-sidebar">
+      <div className="page-main">
+        <div className="card">
+          <div className="muted">{OFFICIAL_ACCOUNT_LABELS[item.account]}</div>
+          <h1>{item.title}</h1>
+          <div className="muted">
+            {formatDate(item.posted_at)}
+            {item.updated_at && ' (수정됨)'}
+          </div>
+
+          {!editing && (
+            <>
+              <pre>{item.content}</pre>
+              {item.photo_links.length > 0 && (
+                <div className="official-photo-gallery">
+                  {item.photo_links.map((url) => (
+                    <img key={url} src={url} alt={item.title} />
+                  ))}
+                </div>
+              )}
+              {item.video_links.length > 0 && (
+                <div className="official-photo-gallery">
+                  {item.video_links.map((url) => (
+                    <video key={url} src={url} controls />
+                  ))}
+                </div>
+              )}
+              <LinkPreview url={item.link} />
+              {isAdmin && (
+                <div className="row">
+                  <button type="button" onClick={() => setEditing(true)}>
+                    수정
+                  </button>
+                  <button type="button" onClick={handleDelete}>
+                    삭제
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+
+          {editing && (
+            <form onSubmit={handleEditSubmit}>
+              <div className="row">
+                <label>
+                  제목{' '}
+                  <input
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    maxLength={100}
+                    required
+                  />
+                </label>
+              </div>
+              <div className="row">
+                <label>
+                  내용{' '}
+                  <textarea
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    maxLength={1000}
+                    required
+                  />
+                </label>
+              </div>
+              <div className="row">
+                <button className="primary" type="submit" disabled={editSubmitting}>
+                  {editSubmitting ? '저장 중...' : '저장'}
+                </button>
+                <button type="button" onClick={() => setEditing(false)}>
+                  취소
+                </button>
+              </div>
+              {editError && <div className="muted warn">{editError}</div>}
+            </form>
+          )}
+        </div>
+
+        <div className="card">
+          <OfficialList />
+        </div>
       </div>
 
-      {!editing && (
-        <>
-          <pre>{item.content}</pre>
-          {item.photo_links.length > 0 && (
-            <div className="official-photo-gallery">
-              {item.photo_links.map((url) => (
-                <img key={url} src={url} alt={item.title} />
-              ))}
-            </div>
-          )}
-          {item.video_links.length > 0 && (
-            <div className="official-photo-gallery">
-              {item.video_links.map((url) => (
-                <video key={url} src={url} controls />
-              ))}
-            </div>
-          )}
-          <LinkPreview url={item.link} />
-          {isAdmin && (
-            <div className="row">
-              <button type="button" onClick={() => setEditing(true)}>
-                수정
-              </button>
-              <button type="button" onClick={handleDelete}>
-                삭제
-              </button>
-            </div>
-          )}
-        </>
-      )}
-
-      {editing && (
-        <form onSubmit={handleEditSubmit}>
-          <div className="row">
-            <label>
-              제목{' '}
-              <input
-                value={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
-                maxLength={100}
-                required
-              />
-            </label>
-          </div>
-          <div className="row">
-            <label>
-              내용{' '}
-              <textarea
-                value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
-                maxLength={1000}
-                required
-              />
-            </label>
-          </div>
-          <div className="row">
-            <button className="primary" type="submit" disabled={editSubmitting}>
-              {editSubmitting ? '저장 중...' : '저장'}
-            </button>
-            <button type="button" onClick={() => setEditing(false)}>
-              취소
-            </button>
-          </div>
-          {editError && <div className="muted warn">{editError}</div>}
-        </form>
-      )}
+      {/* 임시 자리 — 나중에 다른 콘텐츠 들어갈 공간 */}
+      <div className="page-sidebar" />
     </div>
   )
 }

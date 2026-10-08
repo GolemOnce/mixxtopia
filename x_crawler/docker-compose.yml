@@ -19,6 +19,9 @@ services:
       - "4566:4566"   # S3 호환 API (+ LocalStack 전체 서비스 게이트웨이)
     environment:
       SERVICES: s3
+      # 기본값(미설정)은 S3 데이터를 메모리에만 들고 있어서, 볼륨을 마운트해놔도
+      # 컨테이너 재시작(WSL/Docker 재시작 등)마다 버킷이 통째로 사라진다 — 실제로 겪은 문제.
+      PERSISTENCE: 1
     volumes:
       - x-crawler-s3-data:/var/lib/localstack
     ulimits:

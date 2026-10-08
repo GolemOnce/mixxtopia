@@ -697,18 +697,45 @@ h3 {
   margin: auto 0;
 }
 
-/* 모바일은 페이지네이션이 줄바꿈될 수 있어 버튼을 세로 중앙이 아니라
-   툴바 첫 줄 오른쪽 끝에 고정하고, 그만큼 위쪽에 공간을 띄워 겹치지 않게 한다.
-   .board-write-btn 기본 규칙(위)보다 파일상 뒤에 있어야 이 규칙이 이긴다. */
+/* 모바일: 숫자 버튼 줄(.row)은 한 줄에 맞춰 기존처럼 7개로 줄이고(JS에서 siblingCount
+   조절), 페이지 직접 이동 입력은 항상 그 아랫줄로 보낸다. 글쓰기/등록 버튼은 .row와
+   같은 첫 줄 오른쪽 끝에 맞춘다(아랫줄로 내려온 이동 입력과는 분리). */
 @media (max-width: 768px) {
-  .board-toolbar {
-    padding-top: 40px;
+  .pagination-jump {
+    flex-basis: 100%;
+    justify-content: center;
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
   }
 
   .board-toolbar .board-write-btn {
     top: 0;
     bottom: auto;
     margin: 0;
+  }
+
+  /* 7개로 줄여도 간격(기본 10px)까지 더하면 좁은 화면에서 줄바꿈될 수 있어, 한 줄
+     유지를 위해 간격/여백을 좁히고 줄바꿈 자체를 막는다. 그래도 넘치면(아주 좁은
+     화면 등) 잘리는 대신 가로 스크롤되게 둔다.
+     폭이 줄어든 만큼 .row가 가운데로 몰려서 양 끝에 빈 여백이 생기므로, .row를
+     툴바 전체 폭으로 펼치고 이전/다음이 양 끝에 붙도록 space-between으로 바꾼다. */
+  .board-toolbar .row {
+    width: 100%;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 3px;
+    overflow-x: auto;
+  }
+
+  .board-toolbar .row .pagination-btn,
+  .board-toolbar .row .pagination-page {
+    padding: 6px 7px;
+    flex-shrink: 0;
+  }
+
+  .board-toolbar .row .pagination-ellipsis {
+    flex-shrink: 0;
   }
 }
 

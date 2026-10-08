@@ -6,6 +6,7 @@ import { useCurrentUser } from '../auth/useCurrentUser'
 import { formatBoardDate } from '../lib/date'
 import { getPaginationRange } from '../lib/pagination'
 import { POST_CATEGORIES, POST_CATEGORY_LABELS, type PostCategory } from '../lib/postCategories'
+import { useIsMobile } from '../lib/useIsMobile'
 import BoardTable, { type BoardTableColumn } from './BoardTable'
 
 export interface PostItem {
@@ -37,6 +38,7 @@ export const PAGE_SIZE = 30
 export default function BoardList() {
   const navigate = useNavigate()
   const { isAdmin } = useCurrentUser()
+  const isMobile = useIsMobile()
   const filterCategories = isAdmin
     ? POST_CATEGORIES
     : POST_CATEGORIES.filter((c) => c !== 'suggestion')
@@ -120,7 +122,7 @@ export default function BoardList() {
   }
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
-  const pageTokens = getPaginationRange(page, totalPages, 2)
+  const pageTokens = getPaginationRange(page, totalPages, isMobile ? 1 : 2)
 
   const boardColumns: BoardTableColumn<PostItem>[] = [
     { key: 'num', label: '번호', className: 'board-col-num', render: displayNumberOf },
@@ -216,23 +218,23 @@ export default function BoardList() {
           >
             다음 &gt;
           </button>
-          <form className="pagination-jump" onSubmit={handleJumpSubmit}>
-            <input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              value={jumpValue}
-              onChange={(e) => setJumpValue(e.target.value)}
-              className="pagination-jump-input"
-              aria-label="이동할 페이지 번호"
-            />
-            <button type="submit" className="pagination-btn">
-              이동
-            </button>
-          </form>
         </div>
+        <form className="pagination-jump" onSubmit={handleJumpSubmit}>
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={jumpValue}
+            onChange={(e) => setJumpValue(e.target.value)}
+            className="pagination-jump-input"
+            aria-label="이동할 페이지 번호"
+          />
+          <button type="submit" className="pagination-btn">
+            이동
+          </button>
+        </form>
         <button type="button" className="board-write-btn" onClick={() => navigate('/board/new')}>
-          ✎ 글쓰기
+          ✎ 새 글 작성
         </button>
       </div>
     </>

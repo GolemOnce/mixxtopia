@@ -10,6 +10,7 @@ import {
   OFFICIAL_ACCOUNT_LABELS,
   type OfficialAccount,
 } from '../lib/officialAccounts'
+import { useIsMobile } from '../lib/useIsMobile'
 import BoardTable, { type BoardTableColumn } from './BoardTable'
 
 export interface OfficialItem {
@@ -41,6 +42,7 @@ export const PAGE_SIZE = 30
 export default function OfficialList() {
   const navigate = useNavigate()
   const { isAdmin } = useCurrentUser()
+  const isMobile = useIsMobile()
 
   // 페이지/계정 필터를 URL 쿼리스트링에 둬서, 새로고침·링크 공유·뒤로가기에서도
   // 유지되게 한다(예: /official?account=nmixx_official&page=2).
@@ -120,7 +122,7 @@ export default function OfficialList() {
   }
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
-  const pageTokens = getPaginationRange(page, totalPages, 2)
+  const pageTokens = getPaginationRange(page, totalPages, isMobile ? 1 : 2)
 
   const officialColumns: BoardTableColumn<OfficialItem>[] = [
     {
@@ -214,21 +216,21 @@ export default function OfficialList() {
           >
             다음 &gt;
           </button>
-          <form className="pagination-jump" onSubmit={handleJumpSubmit}>
-            <input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              value={jumpValue}
-              onChange={(e) => setJumpValue(e.target.value)}
-              className="pagination-jump-input"
-              aria-label="이동할 페이지 번호"
-            />
-            <button type="submit" className="pagination-btn">
-              이동
-            </button>
-          </form>
         </div>
+        <form className="pagination-jump" onSubmit={handleJumpSubmit}>
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={jumpValue}
+            onChange={(e) => setJumpValue(e.target.value)}
+            className="pagination-jump-input"
+            aria-label="이동할 페이지 번호"
+          />
+          <button type="submit" className="pagination-btn">
+            이동
+          </button>
+        </form>
         {isAdmin && (
           <button
             type="button"

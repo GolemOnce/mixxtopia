@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 
 import { api, authErrorMessage } from '../api/client'
 import { useCurrentUser } from '../auth/useCurrentUser'
+import LinkPreview from '../components/LinkPreview'
 import { formatDate } from '../lib/date'
 import { OFFICIAL_ACCOUNT_LABELS, type OfficialAccount } from '../lib/officialAccounts'
 
@@ -112,11 +113,7 @@ export default function OfficialDetail() {
               ))}
             </div>
           )}
-          <div className="row">
-            <a href={item.link} target="_blank" rel="noreferrer">
-              원본 보기
-            </a>
-          </div>
+          <LinkPreview url={item.link} />
           {isAdmin && (
             <div className="row">
               <button type="button" onClick={() => setEditing(true)}>

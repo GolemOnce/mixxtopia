@@ -63,6 +63,7 @@ export default function OfficialList() {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [listError, setListError] = useState<string | null>(null)
+  const [jumpValue, setJumpValue] = useState('')
 
   useEffect(() => {
     // 상세 페이지에서 "이 글이 있는 페이지"로 URL이 바로 이어서 바뀌는 경우, 이전(page=1)
@@ -104,13 +105,22 @@ export default function OfficialList() {
     updateParams({ page: p === 1 ? null : String(p) })
   }
 
+  function handleJumpSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    const n = Math.trunc(Number(jumpValue))
+    if (Number.isInteger(n) && n >= 1 && n <= totalPages) {
+      goToPage(n)
+    }
+    setJumpValue('')
+  }
+
   // "전체" 탭에서도 화면에 보여줄 가상 번호 — 저장된 값이 아니라 total/page로 매번 계산.
   function displayNumberOf(index: number): number {
     return total - (page - 1) * PAGE_SIZE - index
   }
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
-  const pageTokens = getPaginationRange(page, totalPages)
+  const pageTokens = getPaginationRange(page, totalPages, 2)
 
   const officialColumns: BoardTableColumn<OfficialItem>[] = [
     {
@@ -204,6 +214,20 @@ export default function OfficialList() {
           >
             다음 &gt;
           </button>
+          <form className="pagination-jump" onSubmit={handleJumpSubmit}>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={jumpValue}
+              onChange={(e) => setJumpValue(e.target.value)}
+              className="pagination-jump-input"
+              aria-label="이동할 페이지 번호"
+            />
+            <button type="submit" className="pagination-btn">
+              이동
+            </button>
+          </form>
         </div>
         {isAdmin && (
           <button

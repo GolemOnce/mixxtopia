@@ -62,6 +62,7 @@ export default function BoardList() {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [listError, setListError] = useState<string | null>(null)
+  const [jumpValue, setJumpValue] = useState('')
 
   useEffect(() => {
     // 상세 페이지에서 "이 글이 있는 페이지"로 URL이 바로 이어서 바뀌는 경우, 이전(page=1)
@@ -103,6 +104,15 @@ export default function BoardList() {
     updateParams({ page: p === 1 ? null : String(p) })
   }
 
+  function handleJumpSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    const n = Math.trunc(Number(jumpValue))
+    if (Number.isInteger(n) && n >= 1 && n <= totalPages) {
+      goToPage(n)
+    }
+    setJumpValue('')
+  }
+
   // "전체" 탭에서는 카테고리를 가리지 않는 가상 번호(display_num)를,
   // 특정 카테고리로 필터링했을 때는 그 카테고리 안의 고유 번호(post_num)를 보여준다.
   function displayNumberOf(post: PostItem): number {
@@ -110,7 +120,7 @@ export default function BoardList() {
   }
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
-  const pageTokens = getPaginationRange(page, totalPages)
+  const pageTokens = getPaginationRange(page, totalPages, 2)
 
   const boardColumns: BoardTableColumn<PostItem>[] = [
     { key: 'num', label: '번호', className: 'board-col-num', render: displayNumberOf },
@@ -206,6 +216,20 @@ export default function BoardList() {
           >
             다음 &gt;
           </button>
+          <form className="pagination-jump" onSubmit={handleJumpSubmit}>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={jumpValue}
+              onChange={(e) => setJumpValue(e.target.value)}
+              className="pagination-jump-input"
+              aria-label="이동할 페이지 번호"
+            />
+            <button type="submit" className="pagination-btn">
+              이동
+            </button>
+          </form>
         </div>
         <button type="button" className="board-write-btn" onClick={() => navigate('/board/new')}>
           ✎ 글쓰기

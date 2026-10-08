@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import { api, authErrorMessage } from '../api/client'
 import BoardList, { PAGE_SIZE } from '../components/BoardList'
+import LinkifiedText from '../components/LinkifiedText'
 import { formatDate } from '../lib/date'
 import { POST_CATEGORY_LABELS, type PostCategory } from '../lib/postCategories'
 
@@ -235,7 +236,7 @@ export default function BoardPost() {
 
           {!editing && (
             <>
-              <pre>{post.content}</pre>
+              <LinkifiedText text={post.content} />
               <div className="row">
                 <button type="button" onClick={() => setEditing(true)}>
                   수정

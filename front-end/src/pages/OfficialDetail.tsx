@@ -6,6 +6,7 @@ import { useCurrentUser } from '../auth/useCurrentUser'
 import LinkPreview from '../components/LinkPreview'
 import { formatDate } from '../lib/date'
 import { OFFICIAL_ACCOUNT_LABELS, type OfficialAccount } from '../lib/officialAccounts'
+import LinkifiedText from '../components/LinkifiedText'
 import OfficialList, { PAGE_SIZE } from '../components/OfficialList'
 
 interface OfficialItem {
@@ -124,7 +125,7 @@ export default function OfficialDetail() {
 
           {!editing && (
             <>
-              <pre>{item.content}</pre>
+              <LinkifiedText text={item.content} />
               {item.photo_links.length > 0 && (
                 <div className="official-photo-gallery">
                   {item.photo_links.map((url) => (

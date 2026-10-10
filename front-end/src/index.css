@@ -213,6 +213,19 @@ textarea {
   font: inherit;
 }
 
+/* 글쓰기(BoardNew) 제목/내용 — 카드 패딩만큼의 폭(= 100%)을 그대로 쓰고, 라벨 없이
+   placeholder로 안내한다. 내용은 카드 min-height(720px) 범위를 넘지 않을 정도로
+   넉넉하게 키운다. */
+.board-new-title-input {
+  width: 100%;
+}
+
+.board-new-content-input {
+  width: 100%;
+  height: 400px;
+  resize: vertical;
+}
+
 h3 {
   font-size: 15px;
   margin: 16px 0 6px;

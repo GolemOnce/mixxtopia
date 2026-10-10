@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { api, authErrorMessage } from '../api/client'
 import { useCurrentUser } from '../auth/useCurrentUser'
@@ -43,52 +43,48 @@ export default function BoardNew() {
         <div className="card">
           <h1>글쓰기</h1>
           <form onSubmit={handleSubmit}>
-            <div className="row">
-              <label>
-                종류{' '}
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value as PostCategory)}
+            <div className="board-tabs">
+              {writableCategories.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  className={`board-tab${category === c ? ' active' : ''}`}
+                  onClick={() => setCategory(c)}
                 >
-                  {writableCategories.map((c) => (
-                    <option key={c} value={c}>
-                      {POST_CATEGORY_LABELS[c]}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                제목{' '}
-                <input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  maxLength={100}
-                  required
-                />
-              </label>
+                  {POST_CATEGORY_LABELS[c]}
+                </button>
+              ))}
             </div>
             <div className="row">
-              <label>
-                내용{' '}
-                <textarea
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  maxLength={1000}
-                  required
-                />
-              </label>
+              <input
+                className="board-new-title-input"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                maxLength={100}
+                placeholder="제목을 입력해 주세요."
+                required
+              />
+            </div>
+            <div className="row">
+              <textarea
+                className="board-new-content-input"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                maxLength={1000}
+                placeholder="내용을 입력해 주세요."
+                required
+              />
             </div>
             <div className="row">
               <button className="primary" type="submit" disabled={submitting}>
                 {submitting ? '등록 중...' : '등록'}
               </button>
+              <button type="button" onClick={() => navigate(-1)}>
+                취소
+              </button>
             </div>
           </form>
           {formError && <div className="muted warn">{formError}</div>}
-
-          <div className="row">
-            <Link to="/board">목록으로</Link>
-          </div>
         </div>
 
         <div className="card">

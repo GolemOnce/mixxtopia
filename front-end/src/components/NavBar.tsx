@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom'
 
 import { api } from '../api/client'
 import { useCurrentUser } from '../auth/useCurrentUser'
+import { useTheme } from '../lib/useTheme'
 import FloatingMenu from './FloatingMenu'
 
 const BASE_LINKS = [
@@ -30,6 +31,7 @@ function loadFabEnabled(): boolean {
 export default function NavBar() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [fabEnabled, setFabEnabled] = useState(loadFabEnabled)
+  const { theme, toggleTheme } = useTheme()
   const location = useLocation()
   const { user, loading, isAdmin } = useCurrentUser()
 
@@ -95,6 +97,58 @@ export default function NavBar() {
     ))
   }
 
+  // 다크/라이트 전환 + fab 버튼 on/off 토글. 데스크톱은 navbar-right에, 모바일은
+  // 상단바가 비좁아서 햄버거 드로어 맨 아래 한 줄로 옮겨서 보여준다(같은 버튼을
+  // 두 군데서 재사용 — 실제로 보이는 쪽만 CSS 미디어쿼리로 결정).
+  function renderToggles() {
+    return (
+      <>
+        <button
+          type="button"
+          className="navbar-theme-switch"
+          aria-label={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
+          aria-pressed={theme === 'light'}
+          title={theme === 'dark' ? '라이트 모드' : '다크 모드'}
+          onClick={toggleTheme}
+        >
+          <span className="navbar-theme-switch-thumb">
+            {theme === 'dark' ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path
+                  d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="4" />
+                <path
+                  d="M12 2v2M12 20v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"
+                  strokeLinecap="round"
+                />
+              </svg>
+            )}
+          </span>
+        </button>
+        <button
+          type="button"
+          className="navbar-fab-switch"
+          aria-label={fabEnabled ? '플로팅 메뉴 버튼 끄기' : '플로팅 메뉴 버튼 켜기'}
+          aria-pressed={fabEnabled}
+          title={fabEnabled ? '토글 OFF' : '토글 ON'}
+          onClick={toggleFabEnabled}
+        >
+          <span className="navbar-fab-switch-thumb">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+            </svg>
+          </span>
+        </button>
+      </>
+    )
+  }
+
   function renderAuth() {
     if (loading) return null
 
@@ -128,7 +182,7 @@ export default function NavBar() {
           ☰
         </button>
         <Link to="/" className="navbar-brand">
-          <img src="/mixxtopia_white_rs.png" alt="MIXXTOPIA" />
+          <img src="/mixxtopia_png_rs.png" alt="MIXXTOPIA" />
         </Link>
         {currentLink && (
           <button type="button" className="navbar-current" onClick={() => window.location.reload()}>
@@ -137,16 +191,7 @@ export default function NavBar() {
         )}
         <nav className="navbar-links">{renderLinks()}</nav>
         <div className="navbar-right">
-          <button
-            type="button"
-            className="navbar-fab-switch"
-            aria-label={fabEnabled ? '플로팅 메뉴 버튼 끄기' : '플로팅 메뉴 버튼 켜기'}
-            aria-pressed={fabEnabled}
-            title={fabEnabled ? '토글 OFF' : '토글 ON'}
-            onClick={toggleFabEnabled}
-          >
-            <span className="navbar-fab-switch-thumb" />
-          </button>
+          <div className="navbar-toggles">{renderToggles()}</div>
           <div className="navbar-auth-slot">{renderAuth()}</div>
         </div>
       </div>
@@ -159,7 +204,10 @@ export default function NavBar() {
             aria-label="메뉴 닫기"
             onClick={() => setDrawerOpen(false)}
           />
-          <nav className="navbar-drawer">{renderLinks(() => setDrawerOpen(false))}</nav>
+          <nav className="navbar-drawer">
+            {renderLinks(() => setDrawerOpen(false))}
+            <div className="navbar-drawer-toggles">{renderToggles()}</div>
+          </nav>
         </>
       )}
 

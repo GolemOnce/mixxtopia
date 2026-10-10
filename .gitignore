@@ -32,5 +32,12 @@ x_index.html
 /x_crawler/cookies_export.json
 /x_crawler/cookies_manual.txt
 
+/music_crawler/__pycache__/
+/music_crawler/.pw-profile
+/music_crawler/.venv
+/music_crawler/debug
+/music_crawler/music
+/music_crawler/raw
+
 # x_file
 /x_docs

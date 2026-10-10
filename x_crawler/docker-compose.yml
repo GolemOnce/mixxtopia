@@ -19,11 +19,10 @@ services:
       - "4566:4566"   # S3 호환 API (+ LocalStack 전체 서비스 게이트웨이)
     environment:
       SERVICES: s3
-      # 기본값(미설정)은 S3 데이터를 메모리에만 들고 있어서, 볼륨을 마운트해놔도
-      # 컨테이너 재시작(WSL/Docker 재시작 등)마다 버킷이 통째로 사라진다 — 실제로 겪은 문제.
-      PERSISTENCE: 1
-    volumes:
-      - x-crawler-s3-data:/var/lib/localstack
+      # PERSISTENCE=1을 켜도 이 버전(3.0.2)의 커뮤니티 빌드는 실제로 디스크에 저장/복원을
+      # 안 해서(로그에 persist/restore 기록이 전혀 없음, 실측 확인됨) 빼버림 — 켜두나 안
+      # 켜두나 컨테이너 재시작(WSL/Docker 재시작 등)마다 버킷이 사라지는 건 똑같다.
+      # 버킷이 비면 `python -m x_crawler.recover_s3`로 로컬 디스크 원본에서 재업로드한다.
     ulimits:
       # 기본 nofile 제한이 낮아서 크롤러가 한참 돌면 "Too many open files"로
       # 응답을 아예 못 하게 멈춰버림(실제로 겪은 문제) — 넉넉하게 올려둠.
@@ -33,4 +32,3 @@ services:
 
 volumes:
   x-crawler-mongo-data:
-  x-crawler-s3-data:

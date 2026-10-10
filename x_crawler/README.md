@@ -59,3 +59,10 @@ s3_upload.py       다운로드한 사진/영상 전부를 S3/로컬 S3 호환 �
 - `session/`에는 로그인 토큰이 들어있음. 커밋 금지 (.gitignore 처리됨)
 - `.env`도 커밋 금지(.gitignore 처리됨) — Mongo/S3 접속 정보가 들어있음
 - 계정별 주기를 다르게 하려면 cron에서 `--account`로 따로 실행
+- **로컬 LocalStack(S3) 버킷이 비면**: `PERSISTENCE=1`을 시도해봤지만 LocalStack 3.0
+  커뮤니티 버전에서는 실제로 동작하지 않는 것으로 확인돼서(로그에 persist/restore 기록이
+  전혀 없고 `state/` 디렉터리가 계속 빈 채로 남음) 설정에서 뺐다 — WSL/Docker가 재시작될
+  때마다 컨테이너 프로세스도 같이 재시작되면서 버킷이 통째로 사라지는 건 그대로다. Mongo의
+  `photo_links`/`video_links` URL은 그대로 유효한 키를 가리키므로, 로컬 디스크 원본
+  (`data/media/`)에서 재업로드만 하면 복구된다: `python -m x_crawler.recover_s3`(레포
+  루트에서 실행)

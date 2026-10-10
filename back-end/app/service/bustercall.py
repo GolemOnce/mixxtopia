@@ -28,7 +28,17 @@ class CampaignNotFoundError(Exception):
 
 
 def _to_public(doc: dict) -> dict:
-    return {"pairs": doc["pairs"], "fixed2": doc["fixed2"], "fixed4": doc["fixed4"]}
+    # category/detail/member까지 내려줘야 프론트에서 "{멤버이름} {종류} 해시태그 총공
+    # 원클릭" 제목을 조립할 수 있다(생일=member, 컴백/n주년=detail — member는 그
+    # 둘에서 항상 "nmixx"라 제목에 못 씀. docs/db-schema.md 참고).
+    return {
+        "pairs": doc["pairs"],
+        "fixed2": doc["fixed2"],
+        "fixed4": doc["fixed4"],
+        "category": doc["category"],
+        "detail": doc["detail"],
+        "member": doc["member"],
+    }
 
 
 async def _cache_current(doc: dict) -> None:

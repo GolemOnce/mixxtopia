@@ -1502,3 +1502,65 @@ h2 {
   max-height: none;
   object-fit: contain;
 }
+
+/* 총공 페이지 — 왼쪽은 기존 본문, 오른쪽은 템플릿(pairs) 선택 패널. .page-with-sidebar를
+   재사용하지 않는 이유: 그쪽 사이드바는 지금까지 전부 빈 placeholder라 모바일에서
+   display:none으로 숨겨왔는데, 여기는 양쪽 다 실제 콘텐츠라 모바일에서도 보여야 한다
+   (그냥 위아래로 쌓이기만 하면 됨). */
+.bustercall-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  max-width: var(--content-width);
+  margin: 0 auto;
+}
+
+.bustercall-layout > .card {
+  margin: 0;
+  max-width: none;
+}
+
+.bustercall-main {
+  flex: 7 1 0;
+  min-width: 0;
+}
+
+.bustercall-templates {
+  flex: 3 1 0;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .bustercall-layout {
+    display: block;
+  }
+}
+
+.bustercall-template-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.bustercall-template-item {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg-soft);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: left;
+  white-space: pre-wrap;
+  cursor: pointer;
+}
+
+.bustercall-template-item.selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}

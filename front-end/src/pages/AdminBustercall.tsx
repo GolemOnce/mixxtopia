@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-type Category = 'comeback' | 'birthday' | 'anniversary'
+import { CATEGORY_LABELS, type BustercallCategory } from '../lib/bustercall'
+
+type Category = BustercallCategory
 type Pair = [string, string, string]
 
 interface Campaign {
@@ -13,12 +15,6 @@ interface Campaign {
   fixed2: string
   fixed4: string
   is_current: boolean
-}
-
-const CATEGORY_LABELS: Record<Category, string> = {
-  comeback: '컴백',
-  birthday: '생일',
-  anniversary: 'n주년',
 }
 
 const NEW_CAMPAIGN = 'new'
@@ -264,7 +260,7 @@ export default function AdminBustercall() {
               onChange={(e) => setDetail(e.target.value)}
               maxLength={16}
               placeholder={
-                category === 'comeback' ? '곡 이름' : category === 'birthday' ? 'YYYY' : 'n'
+                category === 'comeback' ? '곡 이름' : 'YYYY(데뷔 연도 기준 연차로 변환됨)'
               }
               disabled={isEditing}
               required

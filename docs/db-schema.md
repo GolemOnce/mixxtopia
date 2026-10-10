@@ -148,7 +148,8 @@
 
 ### 참고
 - category enum (컴백(comeback), 생일(birthday), n주년(anniversary))
-- detail 컴백의 경우 "곡 이름"(예_Heavy Seranade), 생일은 "YYYY"(예_2026), n주년은 "n"(예_5)
+- detail 컴백의 경우 "곡 이름"(예_Heavy Seranade), 생일은 "YYYY"(예_2026), n주년은 데뷔 연도 기준
+  연차로 환산할 "YYYY"(예_2027 → 데뷔(2022) 기준 5주년. 프론트의 BusterCall.tsx에서 계산)
 - db에서 "mixxtopia" Database의 "phrases" 컬렉션에서 category와 detail조합으로
 - member는 생일일 경우 단일 멤버 이름(lily, haewon, sullyoon, bae, jiwoo, kyujin)으로, 컴백이나 n주년은 nmixx로 구분.
 - 유동문구1+고정문구1+유동문구2+고정문구2+유동문구3 으로 조합됨(app.service.bustercall의 get_phrases)
@@ -158,6 +159,23 @@
 - 기존 "hashtag" Mongo DB(레거시 총공 DB)는 더 이상 쓰지 않고 mixxtopia DB의 phrases 컬렉션으로 통합함(레거시로 이관된 기존 문서 1건은 BaseEntity 필드 없이 그대로 둠 — 더 이상 수정될 일 없는 데이터라 소급 반영 안 함)
 - 원래 별도 컬렉션이었던 record(총공 집계 로그)를 여기로 통합함 — 캠페인당 문서가 1개뿐이라 분리 실익이 적었음. 단, 같은 캠페인을 여러 번 재실행(sync)하면 total_clicks/unique_clients/synced_at은 최신 값으로 덮어써지고 과거 회차별 집계 이력은 남지 않음(필요해지면 별도 로그로 재분리)
 - 관리자 페이지의 "기존 캠페인 목록(최신순)" 조회는 updated_at 기준 정렬. 프론트에는 created_by/updated_by/deleted_by를 노출하지 않음(내부 감사용)
+
+## music(music.py, 음원)
+- music_id UUID PK
+- song varchar(50) 곡명
+- album varchar(100) 앨범명
+- album_cover url 앨범 커버 이미지
+- artist varchar(50) 아티스트명
+- duration varchar(5) 곡 길이
+- melon varchar(16) 멜론 곡 번호
+- genie varchar(16) 지니 곡 번호
+- bugs varchar(16) 벅스 곡 번호
+- flo varchar(16) 플로 곡 번호
+- vibe varchar(16) 바이브 곡 번호
+
+### 참고
+- 플레이리스트 커스텀용 테이블
+- 앨범 커버 이미지 frontcloud + s3(테스트-localstack) 저장 후 presigned url 활용해 불러옴
 
 ## suggest(suggest.py, 건의함)
 - suggest_id    UUID    PK

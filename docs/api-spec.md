@@ -116,6 +116,12 @@
 - `PATCH /api/bustercall/campaigns/{phrases_id}`는 기존 캠페인의 문구 내용(pairs/fixed2/fixed4)만 수정하고 is_current=true로 전환. category/detail/member(식별자)는 변경 불가 — 바꾸려면 새로 등록
 - 관리자 페이지는 `GET /api/bustercall/campaigns`로 최신순 목록을 보여주고, 그중 하나를 선택하면 문구가 폼에 자동으로 채워짐(수정용), "새로 만들기"를 선택하면 빈 폼(신규 등록용)
 
+## playlist(playlist.py)
+곡 목록 조회 GET /playlists
+
+### 참고
+- 플레이리스트를 만들기 위해 곡 목록 조회(엔믹스 관련 곡만 존재). - - 모든 데이터(music 고유필드 전부)를 다 가져오고 (26.10.10 현재 109곡) 프론트에서 필터링(곡명, 앨범명)으로 검색, 선택해서 플레이리스트에 추가하는 기능을 메인으로 playlist페이지 구현
+
 ## suggests(suggest.py)
 건의/신고 목록 조회	GET	/suggests	건의함	admin,manager
 건의/신고 상세 조회	GET	/suggests/{suggest_id}	건의함	admin,manager

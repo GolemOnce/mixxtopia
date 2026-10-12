@@ -4,6 +4,7 @@ import NavBar from './components/NavBar'
 import RequireAdmin from './components/RequireAdmin'
 import AdminBustercall from './pages/AdminBustercall'
 import AdminHome from './pages/AdminHome'
+import AdminPlaylist from './pages/AdminPlaylist'
 import Board from './pages/Board'
 import BoardNew from './pages/BoardNew'
 import BoardPost from './pages/BoardPost'
@@ -15,6 +16,7 @@ import Official from './pages/Official'
 import OfficialDetail from './pages/OfficialDetail'
 import OfficialNew from './pages/OfficialNew'
 import PhotoSearch from './pages/PhotoSearch'
+import Playlist from './pages/Playlist'
 import Schedule from './pages/Schedule'
 import ScheduleNew from './pages/ScheduleNew'
 import Vote from './pages/Vote'
@@ -61,6 +63,7 @@ export default function App() {
         <Route path="/board/new" element={<BoardNew />} />
         <Route path="/board/:postId" element={<BoardPost />} />
         <Route path="/bustercall" element={<BusterCall />} />
+        <Route path="/playlist" element={<Playlist />} />
         <Route
           path="/admin"
           element={
@@ -74,6 +77,14 @@ export default function App() {
           element={
             <RequireAdmin>
               <AdminBustercall />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/admin/playlist"
+          element={
+            <RequireAdmin>
+              <AdminPlaylist />
             </RequireAdmin>
           }
         />

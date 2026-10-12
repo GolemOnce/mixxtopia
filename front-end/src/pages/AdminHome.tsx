@@ -7,6 +7,9 @@ export default function AdminHome() {
         <Link to="/admin/bustercall">총공 캠페인 관리</Link>
       </div>
       <div className="row">
+        <Link to="/admin/playlist">권장 플레이리스트 관리</Link>
+      </div>
+      <div className="row">
         <Link to="/official/new">오피셜 등록</Link>
       </div>
       <div className="row">

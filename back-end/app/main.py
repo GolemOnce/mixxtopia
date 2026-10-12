@@ -5,7 +5,9 @@ from app.core.access_log import ensure_indexes as ensure_access_log_indexes
 from app.core.config import settings
 from app.model.bustercall import ensure_indexes as ensure_bustercall_indexes
 from app.model.comment import ensure_indexes as ensure_comment_indexes
+from app.model.music import ensure_indexes as ensure_music_indexes
 from app.model.official import ensure_indexes as ensure_official_indexes
+from app.model.playlist import ensure_indexes as ensure_recommended_playlist_indexes
 from app.model.post import ensure_indexes as ensure_post_indexes
 from app.model.schedule import ensure_indexes as ensure_schedule_indexes
 from app.model.suggest import ensure_indexes as ensure_suggest_indexes
@@ -17,6 +19,7 @@ from app.router import (
     link_preview,
     official,
     photo,
+    playlist,
     post,
     schedule,
     suggest,
@@ -45,6 +48,7 @@ app.include_router(post.router)
 app.include_router(comment.router)
 app.include_router(suggest.router)
 app.include_router(photo.router)
+app.include_router(playlist.router)
 
 
 @app.on_event("startup")
@@ -58,3 +62,5 @@ async def on_startup():
     await ensure_vote_indexes()
     await ensure_post_indexes()
     await ensure_comment_indexes()
+    await ensure_music_indexes()
+    await ensure_recommended_playlist_indexes()

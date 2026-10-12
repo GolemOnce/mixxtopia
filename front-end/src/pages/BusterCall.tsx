@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 
 import { CATEGORY_LABELS, memberLabel, type BustercallCategory } from '../lib/bustercall'
+import { randomId } from '../lib/randomId'
 import { useIsMobile } from '../lib/useIsMobile'
 
 interface PhrasesConfig {
@@ -33,7 +34,7 @@ function getClientId(): string {
   const key = 'mixx_client_id'
   let id = localStorage.getItem(key)
   if (!id) {
-    id = crypto.randomUUID()
+    id = randomId()
     localStorage.setItem(key, id)
   }
   return id

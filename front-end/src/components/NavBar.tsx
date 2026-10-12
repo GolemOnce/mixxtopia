@@ -15,6 +15,7 @@ const BASE_LINKS = [
   { to: '/photos', label: '사진검색' },
   { to: '/board', label: '커뮤니티' },
   { to: '/bustercall', label: '총공' },
+  { to: '/playlist', label: '플레이리스트' },
 ]
 
 const FAB_ENABLED_KEY = 'mixxtopia:nav-fab-enabled'

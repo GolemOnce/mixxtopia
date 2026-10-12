@@ -91,6 +91,35 @@ html {
   scrollbar-gutter: stable;
 }
 
+/* 브라우저 기본 스크롤바가 너무 두껍고 테마와 안 어울려서, 가늘고 트랙 없는
+   스크롤바로 전역 교체한다. 색은 테마 변수를 그대로 써서 다크/라이트 모두 자연스럽게
+   맞춰진다. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-faint);
+  background-clip: padding-box;
+}
+
 body {
   font-family:
     'Pretendard',
@@ -1563,4 +1592,379 @@ h2 {
 .bustercall-template-item.selected {
   border-color: var(--accent);
   background: var(--accent-soft);
+}
+
+/* 플레이리스트 페이지. 사이드바(권장/나만의 플레이리스트 전환) + 본문 2카드(현재 선택된
+   플레이리스트 / 곡 찾기) 세 칼럼 구조 — bustercall-layout과 같은 이유로
+   .page-with-sidebar를 재사용하지 않는다(전부 실제 콘텐츠라 모바일에서도 보여야 함). */
+.playlist-notice {
+  max-width: var(--content-width);
+  margin: 0 auto 12px;
+}
+
+.playlist-page {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  max-width: var(--content-width);
+  margin: 0 auto;
+}
+
+.playlist-nav {
+  flex: 2 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+}
+
+.playlist-nav-item {
+  display: block;
+  width: 100%;
+  padding: 8px 4px;
+  border: none;
+  border-radius: 0;
+  background: none;
+  color: var(--text-dim);
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.playlist-nav-item.active {
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.playlist-nav-group {
+  margin-top: 8px;
+}
+
+.playlist-nav-group-label {
+  padding: 8px 4px 4px;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.playlist-nav-custom-item {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.playlist-nav-custom-item .playlist-nav-item {
+  flex: 1;
+  min-width: 0;
+  padding-left: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.playlist-nav-custom-item.active .playlist-nav-item {
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.playlist-nav-icon-btn {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border: none;
+  background: none;
+  color: var(--text-faint);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.playlist-nav-add {
+  display: block;
+  width: 100%;
+  padding: 8px 4px;
+  margin-top: 4px;
+  border: none;
+  background: none;
+  color: var(--accent);
+  text-align: left;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.playlist-layout {
+  flex: 10 1 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  min-width: 0;
+}
+
+.playlist-layout > .card {
+  margin: 0;
+  max-width: none;
+}
+
+.playlist-main {
+  flex: 3 1 0;
+  min-width: 0;
+}
+
+.playlist-side {
+  flex: 2 1 0;
+  min-width: 0;
+  animation: playlist-side-in 0.22s ease;
+}
+
+.playlist-side.closing {
+  animation: playlist-side-out 0.22s ease forwards;
+  pointer-events: none;
+}
+
+@keyframes playlist-side-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes playlist-side-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
+.playlist-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 4px 0 8px;
+}
+
+.playlist-title-row h2 {
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .playlist-page {
+    display: block;
+  }
+
+  .playlist-nav {
+    margin-bottom: 16px;
+  }
+
+  .playlist-layout {
+    display: block;
+  }
+}
+
+.playlist-song-rows {
+  display: flex;
+  flex-direction: column;
+  margin-top: 12px;
+  max-height: 640px;
+  overflow-y: auto;
+}
+
+/* 편집하기(곡 찾기 패널)를 닫은 상태 — 플레이리스트 카드가 전체 폭을 쓰므로 곡
+   목록을 항상 좌우 2열로 나눠서 보여준다(홀수면 왼쪽이 1곡 더 많게 — 분배는
+   Playlist.tsx의 splitAt에서 계산, 브라우저 자동 balance에 맡기지 않음). */
+.playlist-song-rows-wide {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  /* 보기 모드(2열)에서는 내부 스크롤 없이 목록 전체가 한 화면에 다 보이게 한다. */
+  max-height: none;
+  overflow-y: visible;
+}
+
+.playlist-song-col {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .playlist-song-rows-wide {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+.playlist-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.playlist-row.dragging {
+  opacity: 0.4;
+}
+
+.playlist-row-handle {
+  flex-shrink: 0;
+  color: var(--text-faint);
+  font-size: 14px;
+  cursor: grab;
+  user-select: none;
+}
+
+.playlist-row-num {
+  flex-shrink: 0;
+  width: 20px;
+  color: var(--text-dim);
+  font-size: 12px;
+  text-align: right;
+}
+
+.playlist-row-cover {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  background: var(--card-bg-soft);
+  border: 1px solid var(--border-soft);
+  overflow: hidden;
+}
+
+.playlist-row-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.playlist-row-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.playlist-row-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.playlist-row-duration {
+  flex-shrink: 0;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.playlist-row-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+}
+
+.playlist-row-actions button {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.playlist-row-actions button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.playlist-total-duration {
+  margin-top: 8px;
+  text-align: right;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.playlist-platform-chips {
+  margin: 8px 0;
+}
+
+.playlist-platform-chip {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card-bg-soft);
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.playlist-platform-chip.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.playlist-search-results {
+  display: flex;
+  flex-direction: column;
+  margin-top: 12px;
+  max-height: 640px;
+  overflow-y: auto;
+}
+
+.playlist-song-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+/* 곡명/앨범명이 길어도 "추가" 버튼이 찌그러지지 않게, 텍스트 쪽만 남는 공간을 모두
+   차지하면서 줄임표로 잘리게 하고 버튼은 shrink 대상에서 뺀다. */
+.playlist-song-info {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.playlist-song-info > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.playlist-song-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.playlist-song-duration {
+  flex-shrink: 0;
+  font-size: 13px;
+}
+
+.playlist-song-item > button {
+  flex-shrink: 0;
+}
+
+.playlist-link-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.playlist-link-item pre {
+  font-size: 12px;
+  word-break: break-all;
 }

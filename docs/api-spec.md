@@ -82,6 +82,7 @@
 - category(notice/free/question/suggestion) 중 notice(공지)는 admin/manager만 작성 가능(그 외 카테고리는 로그인한 모든 role)
 - suggestion(건의) 카테고리는 admin/manager만 조회 가능(CLAUDE.md "건의글은 관리자만 조회 가능") — `category=suggestion`으로 명시 필터링하면 비관리자는 403, 필터 없는 전체 목록에서는 자동으로 제외되고, 상세 조회도 403. `GET /comments/{post_id}`·`POST /comments/{post_id}`도 대상 게시글이 건의글이면 동일하게 막힘(비로그인 포함 `app.core.deps.get_current_user_optional`로 판별)
 - "owner"는 서비스 레벨에서 `post.author_id == 로그인한 유저`로 판단(admin/manager는 무조건 통과)
+- 응답에 `author_id` 포함 — 프론트에서 "수정/삭제 버튼을 본인/관리자에게만 보여주는" 클라이언트 측 owner 판정에 씀(comments와 동일한 이유)
 - 작성 시점 IP를 access_logs에 기록(`action=post_create`)
 - category는 변경 불가(PATCH 대상에서 제외) — post_num이 category별로 매겨지므로 카테고리 이동은 새 글 작성으로 처리
 - 조회수(view_count): `GET /posts/{post_id}` 호출 시 조회자(로그인 유저면 user_id, 아니면 IP)당 24시간에 한 번만 증가. `GET /posts`(목록)는 증가시키지 않음

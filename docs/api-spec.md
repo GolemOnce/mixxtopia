@@ -117,10 +117,21 @@
 - 관리자 페이지는 `GET /api/bustercall/campaigns`로 최신순 목록을 보여주고, 그중 하나를 선택하면 문구가 폼에 자동으로 채워짐(수정용), "새로 만들기"를 선택하면 빈 폼(신규 등록용)
 
 ## playlist(playlist.py)
-곡 목록 조회 GET /playlists
+곡 목록 조회	GET	/playlists	플레이리스트	all
+권장 플레이리스트 조회	GET	/playlists/recommended	플레이리스트	all
+
+### 관리자 전용
+권장 플레이리스트 목록 조회	GET	/playlists/recommended/campaigns	플레이리스트	admin,manager
+권장 플레이리스트 신규 등록	POST	/playlists/recommended/campaigns	플레이리스트	admin,manager
+권장 플레이리스트 수정/전환	PATCH	/playlists/recommended/campaigns/{playlist_id}	플레이리스트	admin,manager
+권장 플레이리스트 삭제	DELETE	/playlists/recommended/campaigns/{playlist_id}	플레이리스트	admin,manager
 
 ### 참고
-- 플레이리스트를 만들기 위해 곡 목록 조회(엔믹스 관련 곡만 존재). - - 모든 데이터(music 고유필드 전부)를 다 가져오고 (26.10.10 현재 109곡) 프론트에서 필터링(곡명, 앨범명)으로 검색, 선택해서 플레이리스트에 추가하는 기능을 메인으로 playlist페이지 구현
+- `GET /playlists`는 플레이리스트를 만들기 위한 곡 목록 조회(엔믹스 관련 곡만 존재). 모든 데이터(music 고유필드 전부)를 다 가져오고 (26.10.10 현재 109곡) 프론트에서 필터링(곡명, 앨범명)으로 검색, 선택해서 플레이리스트에 추가하는 기능을 메인으로 playlist페이지 구현
+- "나만의 플레이리스트"(커스텀, 여러 개 생성/전환 가능)는 서버에 저장하지 않고 프론트 localStorage에만 보관 — 캐시 삭제 시 함께 사라짐. 그래서 전용 API 없음
+- "권장 플레이리스트"는 bustercall의 phrases와 동일한 구조(is_current 패턴) — 관리자(음원총공팀)가 등록/수정한 것 중 하나만 `is_current: true`로 공개 노출. 등록/수정 시 song_ids에 없는 곡 id가 섞여 있으면 400
+- `PATCH /playlists/recommended/campaigns/{playlist_id}`는 bustercall과 동일하게 "내용 수정 + is_current로 전환" 의미(식별자 성격의 필드가 없어 title/song_ids 둘 다 수정 가능)
+- 캐싱(Redis 등)은 아직 적용하지 않음 — 트래픽 보고 나중에 고려
 
 ## suggests(suggest.py)
 건의/신고 목록 조회	GET	/suggests	건의함	admin,manager

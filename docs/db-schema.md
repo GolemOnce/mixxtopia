@@ -177,6 +177,17 @@
 - 플레이리스트 커스텀용 테이블
 - 앨범 커버 이미지 frontcloud + s3(테스트-localstack) 저장 후 presigned url 활용해 불러옴
 
+## recommended_playlists(playlist.py, 권장 플레이리스트)
+- playlist_id UUID PK
+- title varchar(100) 플레이리스트 제목
+- song_ids array(UUID) 곡 번호 목록(music_id 참조, 순서/중복 허용)
+- is_current boolean 현재 공개 노출 여부
+
+### 참고
+- bustercall의 phrases와 동일한 is_current 패턴 — 관리자(음원총공팀)가 등록/수정한 것 중 is_current:true인 것 하나만 `GET /playlists/recommended`로 공개 노출되고, 나머지는 과거 등록 이력으로 soft delete 전까지 남음
+- song_ids는 music 컬렉션의 music_id를 참조하되 FK 제약 없이(Mongo) 서비스 레벨에서 등록/수정 시점에 존재 여부만 검증(없는 id 섞이면 400)
+- "나만의 플레이리스트"(사용자 커스텀)는 여기 저장하지 않고 프론트 localStorage에만 보관 — 여러 개 생성/전환 가능하지만 서버/DB에는 흔적이 없음(캐시 삭제 시 소실)
+
 ## suggest(suggest.py, 건의함)
 - suggest_id    UUID    PK
 - category enum varchar(20) 건의 종류

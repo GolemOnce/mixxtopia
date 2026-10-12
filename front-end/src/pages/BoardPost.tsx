@@ -11,6 +11,7 @@ import { POST_CATEGORY_LABELS, type PostCategory } from '../lib/postCategories'
 interface PostItem {
   post_id: string
   post_num: number
+  author_id: string
   author: string
   category: PostCategory
   title: string
@@ -215,7 +216,7 @@ export default function BoardPost() {
       <>
         <div className="muted">
           {c.author}
-          {c.mention_to && <> → @{c.mention_to}</>} · {formatDate(c.created_at)}
+          {c.mention_to && <> → {c.mention_to}</>} · {formatDate(c.created_at)}
         </div>
         <div>{c.content}</div>
         <div className="row">
@@ -256,6 +257,8 @@ export default function BoardPost() {
   if (postError) return <div className="card muted warn">{postError}</div>
   if (!post) return null
 
+  const canEditPost = isAdmin || (user !== null && user.user_id === post.author_id)
+
   return (
     <div className="page-with-sidebar">
       <div className="page-main">
@@ -273,14 +276,16 @@ export default function BoardPost() {
           {!editing && (
             <>
               <LinkifiedText text={post.content} className="board-post-content" />
-              <div className="row">
-                <button type="button" onClick={() => setEditing(true)}>
-                  수정
-                </button>
-                <button type="button" onClick={handleDeletePost}>
-                  삭제
-                </button>
-              </div>
+              {canEditPost && (
+                <div className="row">
+                  <button type="button" onClick={() => setEditing(true)}>
+                    수정
+                  </button>
+                  <button type="button" onClick={handleDeletePost}>
+                    삭제
+                  </button>
+                </div>
+              )}
             </>
           )}
 
@@ -403,6 +408,12 @@ export default function BoardPost() {
                 className="comment-input"
                 value={commentContent}
                 onChange={(e) => setCommentContent(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                    e.preventDefault()
+                    e.currentTarget.form?.requestSubmit()
+                  }
+                }}
                 maxLength={100}
                 placeholder="댓글을 입력하세요"
                 required

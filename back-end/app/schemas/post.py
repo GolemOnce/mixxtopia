@@ -19,6 +19,7 @@ class PostUpdateRequest(BaseModel):
 class PostResponse(BaseModel):
     post_id: str
     post_num: int
+    author_id: str
     author: str
     category: PostCategory
     title: str

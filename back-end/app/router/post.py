@@ -23,6 +23,7 @@ def _to_response(doc: dict, display_num: int | None = None) -> PostResponse:
     return PostResponse(
         post_id=doc["_id"],
         post_num=doc["post_num"],
+        author_id=doc["author_id"],
         author=doc["author"],
         category=doc["category"],
         title=doc["title"],

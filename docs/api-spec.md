@@ -99,6 +99,7 @@
 - 답글 작성 시 부모 댓글 작성자 닉네임을 `mention_to`로 스냅샷 저장
 - soft delete된 댓글은 목록에서 완전히 빠지지 않고 내용만 "삭제된 댓글입니다"로 대체 — 답글이 있는 채로 부모가 삭제돼도 스레드가 안 끊기게 하기 위함
 - 댓글 작성 시점 IP를 access_logs에 기록(`action=comment_create`)
+- 응답에 `author_id`(작성자 UUID) 포함 — 다른 도메인과 달리 프론트에서 "댓글 삭제 버튼을 본인/관리자에게만 보여주는" 클라이언트 측 owner 판정에 써야 해서 노출함(닉네임은 중복 가능해 비교 기준으로 못 씀)
 
 ## bustercall(bustercall.py)
 총공	POST	/api/bustercall/click	총공	all

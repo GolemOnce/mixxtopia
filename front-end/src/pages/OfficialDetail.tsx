@@ -124,6 +124,7 @@ export default function OfficialDetail() {
             {formatDate(item.posted_at)}
             {item.updated_at && ' (수정됨)'}
           </div>
+          <div className="detail-divider" />
 
           {!editing && (
             <>

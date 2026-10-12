@@ -17,6 +17,7 @@ def _to_response(doc: dict, replies: list[CommentResponse]) -> CommentResponse:
     return CommentResponse(
         comment_id=doc["_id"],
         post_id=doc["post_id"],
+        author_id=doc["author_id"],
         author=doc["author"],
         parent_id=doc.get("parent_id"),
         mention_to=doc.get("mention_to"),

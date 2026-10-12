@@ -10,7 +10,9 @@ interface Embed {
 
 // 게시글 본문(자유 텍스트)을 그대로 보여주되, 안에 있는 URL은 클릭 가능한 링크로 바꾸고
 // 유튜브/인스타/틱톡 링크는 아래에 임베드까지 붙여준다. Board/Official 상세 둘 다 재사용.
-export default function LinkifiedText({ text }: { text: string }) {
+// className은 호출하는 페이지에서 본문 래퍼에만 다른 스타일(예: BoardPost의 min-width)을
+// 얹고 싶을 때만 넘긴다.
+export default function LinkifiedText({ text, className }: { text: string; className?: string }) {
   const parts = text.split(URL_REGEX)
   const embeds: Embed[] = []
   const seen = new Set<string>()
@@ -33,7 +35,7 @@ export default function LinkifiedText({ text }: { text: string }) {
 
   return (
     <>
-      <pre>{nodes}</pre>
+      <div className={className ? `post-content ${className}` : 'post-content'}>{nodes}</div>
       {embeds.length > 0 && (
         <div className="content-embeds">
           {embeds.map((embed) => {

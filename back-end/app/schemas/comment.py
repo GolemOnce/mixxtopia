@@ -13,6 +13,7 @@ class CommentCreateRequest(BaseModel):
 class CommentResponse(BaseModel):
     comment_id: str
     post_id: str
+    author_id: str
     author: str
     parent_id: str | None
     mention_to: str | None

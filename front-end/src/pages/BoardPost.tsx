@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import { api, authErrorMessage } from '../api/client'
+import { useCurrentUser } from '../auth/useCurrentUser'
 import BoardList, { PAGE_SIZE } from '../components/BoardList'
 import LinkifiedText from '../components/LinkifiedText'
 import { formatDate } from '../lib/date'
@@ -22,6 +23,7 @@ interface PostItem {
 interface CommentItem {
   comment_id: string
   post_id: string
+  author_id: string
   author: string
   parent_id: string | null
   mention_to: string | null
@@ -44,6 +46,7 @@ export default function BoardPost() {
   const { postId } = useParams<{ postId: string }>()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+  const { user, isAdmin } = useCurrentUser()
 
   const [post, setPost] = useState<PostItem | null>(null)
   const [postError, setPostError] = useState<string | null>(null)
@@ -64,6 +67,7 @@ export default function BoardPost() {
 
   const [commentContent, setCommentContent] = useState('')
   const [replyTo, setReplyTo] = useState<{ id: string; author: string } | null>(null)
+  const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set())
   const [commentSubmitting, setCommentSubmitting] = useState(false)
   const [commentError, setCommentError] = useState<string | null>(null)
 
@@ -195,7 +199,18 @@ export default function BoardPost() {
     }
   }
 
-  function renderComment(c: CommentItem) {
+  function toggleReplies(commentId: string) {
+    setExpandedReplies((prev) => {
+      const next = new Set(prev)
+      if (next.has(commentId)) next.delete(commentId)
+      else next.add(commentId)
+      return next
+    })
+  }
+
+  function renderComment(c: CommentItem, expanded: boolean) {
+    const canDelete = isAdmin || (user !== null && user.user_id === c.author_id)
+
     return (
       <>
         <div className="muted">
@@ -204,12 +219,32 @@ export default function BoardPost() {
         </div>
         <div>{c.content}</div>
         <div className="row">
-          <button type="button" onClick={() => setReplyTo({ id: c.comment_id, author: c.author })}>
-            답글
+          {c.reply_count > 0 && (
+            <button
+              type="button"
+              className="comment-action"
+              onClick={() => toggleReplies(c.comment_id)}
+            >
+              <span className="comment-toggle-chevron">{expanded ? '▴' : '▾'}</span>
+              답글 {c.reply_count}개 {expanded ? '숨기기' : '보기'}
+            </button>
+          )}
+          <button
+            type="button"
+            className="comment-action"
+            onClick={() => setReplyTo({ id: c.comment_id, author: c.author })}
+          >
+            답글 쓰기
           </button>
-          <button type="button" onClick={() => handleDeleteComment(c.comment_id)}>
-            삭제
-          </button>
+          {canDelete && (
+            <button
+              type="button"
+              className="comment-action comment-action-delete"
+              onClick={() => handleDeleteComment(c.comment_id)}
+            >
+              삭제
+            </button>
+          )}
         </div>
       </>
     )
@@ -233,10 +268,11 @@ export default function BoardPost() {
             {post.author} · {formatDate(post.created_at)} · 조회 {post.view_count}
             {post.updated_at && ' (수정됨)'}
           </div>
+          <div className="detail-divider" />
 
           {!editing && (
             <>
-              <LinkifiedText text={post.content} />
+              <LinkifiedText text={post.content} className="board-post-content" />
               <div className="row">
                 <button type="button" onClick={() => setEditing(true)}>
                   수정
@@ -284,21 +320,29 @@ export default function BoardPost() {
             </form>
           )}
 
+          <div className="detail-divider" />
           <h3>댓글 {commentTotal}개</h3>
-          <div className="row">
-            <label>
-              정렬{' '}
-              <select
-                value={commentSort}
-                onChange={(e) => {
-                  setCommentSort(e.target.value as 'asc' | 'desc')
-                  setCommentPage(1)
-                }}
-              >
-                <option value="asc">등록순</option>
-                <option value="desc">최신순</option>
-              </select>
-            </label>
+          <div className="board-tabs">
+            <button
+              type="button"
+              className={`board-tab${commentSort === 'asc' ? ' active' : ''}`}
+              onClick={() => {
+                setCommentSort('asc')
+                setCommentPage(1)
+              }}
+            >
+              등록순
+            </button>
+            <button
+              type="button"
+              className={`board-tab${commentSort === 'desc' ? ' active' : ''}`}
+              onClick={() => {
+                setCommentSort('desc')
+                setCommentPage(1)
+              }}
+            >
+              최신순
+            </button>
           </div>
 
           {loadingComments && <div className="muted">불러오는 중...</div>}
@@ -307,18 +351,21 @@ export default function BoardPost() {
             <div className="muted">댓글이 없습니다.</div>
           )}
 
-          {comments.map((c) => (
-            <div className="list-item" key={c.comment_id}>
-              {renderComment(c)}
-              {c.replies.length > 0 && (
-                <div className="reply-list">
-                  {c.replies.map((r) => (
-                    <div key={r.comment_id}>{renderComment(r)}</div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+          {comments.map((c) => {
+            const expanded = expandedReplies.has(c.comment_id)
+            return (
+              <div className="list-item" key={c.comment_id}>
+                {renderComment(c, expanded)}
+                {c.replies.length > 0 && expanded && (
+                  <div className="reply-list">
+                    {c.replies.map((r) => (
+                      <div key={r.comment_id}>{renderComment(r, false)}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
 
           {commentTotalPages > 1 && (
             <div className="row">
@@ -353,6 +400,7 @@ export default function BoardPost() {
             )}
             <div className="row">
               <textarea
+                className="comment-input"
                 value={commentContent}
                 onChange={(e) => setCommentContent(e.target.value)}
                 maxLength={100}

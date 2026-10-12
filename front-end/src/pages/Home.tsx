@@ -1,7 +1,11 @@
+import MinimalCountdown from "../components/MinimalCountdown";
+
 export default function Home() {
   return (
     <div className="card">
-      <p className="muted">메인 페이지는 아직 준비 중입니다.</p>
+      <p className="muted">
+        <MinimalCountdown target="2026-10-19T18:00:00+09:00" labels={["일", "시간", "분", "초"]} />
+      </p>
     </div>
   )
 }

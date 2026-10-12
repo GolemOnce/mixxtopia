@@ -1,0 +1,73 @@
+/* ------------------------------------------------------------------
+   색은 부모의 color 를 그대로 따라간다 (라이트/다크 어디에 둬도 됨)
+   크기는 --mc-size 하나로 조절
+   ------------------------------------------------------------------ */
+.minimal-countdown {
+  --mc-size: clamp(36px, 11vw, 48px);
+  --mc-gap: calc(var(--mc-size) * 0.28);
+  --mc-muted: 0.45;
+
+  display: inline-flex;
+  align-items: flex-start;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Pretendard",
+    "Apple SD Gothic Neo", sans-serif;
+  color: inherit;
+}
+
+.mc-group {
+  display: flex;
+  align-items: flex-start;
+}
+
+.mc-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.mc-value {
+  display: inline-flex;
+  font-size: var(--mc-size);
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums; /* 숫자 폭 고정 → 바뀔 때 흔들리지 않음 */
+}
+
+.mc-digit {
+  display: inline-block;
+  animation: mc-in 280ms ease-out;
+}
+
+.mc-label {
+  margin-top: calc(var(--mc-size) * 0.22);
+  font-size: max(10px, calc(var(--mc-size) * 0.16));
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  opacity: var(--mc-muted);
+}
+
+.mc-sep {
+  padding: 0 var(--mc-gap);
+  font-size: var(--mc-size);
+  font-weight: 200;
+  line-height: 0.92;
+  opacity: 0.25;
+}
+
+@keyframes mc-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.12em);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mc-digit {
+    animation: none;
+  }
+}

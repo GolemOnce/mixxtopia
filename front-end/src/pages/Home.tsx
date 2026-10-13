@@ -67,7 +67,7 @@ export default function Home() {
       <div className="detail-divider" />
 
       <div className="home-section">
-        <div className="home-section-label">공식 채널</div>
+        <div className="home-section-label">공식 채널 바로가기</div>
         <div className="home-link-chips">
           {OFFICIAL_LINKS.map((link) => (
             <a

@@ -7,6 +7,7 @@ from app.core.deps import (
     require_self_or_roles,
 )
 from app.core.oauth import OAuthVerificationError
+from app.core.rate_limit import rate_limit
 from app.core.security import (
     REFRESH_TOKEN_COOKIE,
     InvalidTokenError,
@@ -35,7 +36,12 @@ router = APIRouter(prefix="/api/users", tags=["user"])
 auth_router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
-@auth_router.post("/signup", response_model=AuthSignupResponse, status_code=status.HTTP_201_CREATED)
+@auth_router.post(
+    "/signup",
+    response_model=AuthSignupResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(rate_limit("signup", 5, 60))],
+)
 async def signup(payload: AuthSignupRequest, request: Request, response: Response):
     try:
         user, access_token, refresh_token = await user_service.signup(
@@ -63,7 +69,11 @@ async def signup(payload: AuthSignupRequest, request: Request, response: Respons
     )
 
 
-@auth_router.post("/login", response_model=AuthLoginResponse)
+@auth_router.post(
+    "/login",
+    response_model=AuthLoginResponse,
+    dependencies=[Depends(rate_limit("login", 10, 60))],
+)
 async def login(payload: AuthLoginRequest, response: Response):
     try:
         user, access_token, refresh_token = await user_service.login(payload)

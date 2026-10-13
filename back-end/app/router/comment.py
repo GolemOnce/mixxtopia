@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.core.deps import get_client_ip, get_current_user, get_current_user_optional
+from app.core.rate_limit import rate_limit
 from app.model.user import User, UserRole
 from app.schemas.comment import CommentCreateRequest, CommentListResponse, CommentResponse
 from app.service import comment as comment_service
@@ -56,7 +57,12 @@ async def list_comments(
     return CommentListResponse(items=items, total=total, page=page, page_size=page_size)
 
 
-@router.post("/{post_id}", response_model=CommentResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{post_id}",
+    response_model=CommentResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(rate_limit("comment_create", 20, 60))],
+)
 async def create_comment(
     post_id: str,
     payload: CommentCreateRequest,

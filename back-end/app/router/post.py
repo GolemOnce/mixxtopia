@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from app.core.deps import get_client_ip, get_current_user, get_current_user_optional
+from app.core.rate_limit import rate_limit
 from app.model.post import PostCategory
 from app.model.user import User, UserRole
 from app.schemas.post import (
@@ -91,7 +92,12 @@ async def get_post(
     return _to_response(doc)
 
 
-@router.post("", response_model=PostResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=PostResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(rate_limit("post_create", 10, 60))],
+)
 async def create_post(
     payload: PostCreateRequest, request: Request, current_user: User = Depends(get_current_user)
 ):

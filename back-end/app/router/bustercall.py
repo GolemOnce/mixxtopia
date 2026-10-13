@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 
 from app.core.deps import require_roles
+from app.core.rate_limit import rate_limit
 from app.model.user import User, UserRole
 from app.schemas.bustercall import (
     BustercallCampaignCreateRequest,
@@ -18,7 +19,7 @@ async def get_phrases():
     return await bustercall_service.get_phrases()
 
 
-@router.post("/click")
+@router.post("/click", dependencies=[Depends(rate_limit("bustercall_click", 60, 60))])
 async def click(req: Request):
     try:
         body = await req.json()

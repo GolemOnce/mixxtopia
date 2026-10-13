@@ -1,12 +1,17 @@
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
+from app.core.rate_limit import rate_limit
 from app.schemas.link_preview import LinkPreviewResponse
 from app.service import link_preview as link_preview_service
 
 router = APIRouter(prefix="/api/link-preview", tags=["link-preview"])
 
 
-@router.get("", response_model=LinkPreviewResponse)
+@router.get(
+    "",
+    response_model=LinkPreviewResponse,
+    dependencies=[Depends(rate_limit("link_preview", 20, 60))],
+)
 async def get_link_preview(url: str = Query(..., max_length=500)):
     try:
         data = await link_preview_service.get_link_preview(url)

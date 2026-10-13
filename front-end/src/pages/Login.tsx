@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import { ApiError, api, authErrorMessage } from '../api/client'
 import {
@@ -116,7 +117,11 @@ export default function Login() {
                 checked={agreeTerms}
                 onChange={(e) => setAgreeTerms(e.target.checked)}
               />{' '}
-              (필수) 서비스 이용약관에 동의합니다.
+              (필수){' '}
+              <Link to="/terms" target="_blank" rel="noopener noreferrer">
+                서비스 이용약관
+              </Link>
+              에 동의합니다.
             </label>
           </div>
           <div className="row">
@@ -126,7 +131,11 @@ export default function Login() {
                 checked={agreePrivacy}
                 onChange={(e) => setAgreePrivacy(e.target.checked)}
               />{' '}
-              (필수) 개인정보 수집·이용(IP 및 접속기록 수집 포함)에 동의합니다.
+              (필수){' '}
+              <Link to="/privacy" target="_blank" rel="noopener noreferrer">
+                개인정보 수집·이용(IP 및 접속기록 수집 포함)
+              </Link>
+              에 동의합니다.
             </label>
           </div>
           <div className="row">

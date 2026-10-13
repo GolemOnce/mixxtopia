@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom'
 
+import Footer from './components/Footer'
 import NavBar from './components/NavBar'
 import RequireAdmin from './components/RequireAdmin'
 import AdminBustercall from './pages/AdminBustercall'
@@ -17,8 +18,10 @@ import OfficialDetail from './pages/OfficialDetail'
 import OfficialNew from './pages/OfficialNew'
 import PhotoSearch from './pages/PhotoSearch'
 import Playlist from './pages/Playlist'
+import Privacy from './pages/Privacy'
 import Schedule from './pages/Schedule'
 import ScheduleNew from './pages/ScheduleNew'
+import Terms from './pages/Terms'
 import Vote from './pages/Vote'
 import VoteNew from './pages/VoteNew'
 
@@ -30,6 +33,8 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/intro" element={<Intro />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
         <Route path="/photos" element={<PhotoSearch />} />
         <Route path="/official" element={<Official />} />
         <Route
@@ -89,6 +94,7 @@ export default function App() {
           }
         />
       </Routes>
+      <Footer />
     </>
   )
 }

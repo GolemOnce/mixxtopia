@@ -9,8 +9,14 @@
 
   display: inline-flex;
   align-items: flex-start;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Pretendard",
-    "Apple SD Gothic Neo", sans-serif;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    'Pretendard',
+    'Apple SD Gothic Neo',
+    sans-serif;
   color: inherit;
 }
 

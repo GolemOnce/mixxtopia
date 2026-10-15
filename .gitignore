@@ -41,3 +41,9 @@ x_index.html
 
 # x_file
 /x_docs
+
+# terraform (.terraform.lock.hcl는 추적 — 프로바이더 버전 고정용, package-lock.json과 동일 역할)
+/terraform/.terraform/
+/terraform/terraform.tfvars
+/terraform/*.tfplan
+/terraform/crash.log

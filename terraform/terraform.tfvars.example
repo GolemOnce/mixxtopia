@@ -1,0 +1,18 @@
+# 이 파일을 terraform.tfvars로 복사해서 실제 값으로 채운 뒤 사용할 것.
+# terraform.tfvars는 .gitignore에 걸려 있어야 한다(비밀값이 평문으로 들어가므로).
+
+aws_region   = "ap-northeast-2"
+project_name = "mixxtopia"
+domain_name  = "mixxtopia.site"
+
+ssh_public_key_path = "~/.ssh/mixxtopia.pub"
+ssh_allowed_cidr    = ["0.0.0.0/0"] # 가능하면 본인 고정 IP로 좁힐 것, 예: ["1.2.3.4/32"]
+
+git_repo_url = "https://github.com/GolemOnce/mixxtopia.git"
+
+# Atlas 콘솔 > Organization Settings > Access Manager > API Keys 에서 발급
+atlas_public_key  = "CHANGE_ME"
+atlas_private_key = "CHANGE_ME"
+atlas_org_id      = "CHANGE_ME"
+
+media_bucket_name = "mixxtopia-media"

@@ -29,6 +29,12 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      # 호스트의 certbot(terraform/user_data.sh.tpl, README.md 참고)이 관리하는 인증서/
+      # ACME 챌린지 경로를 그대로 공유한다.
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
     depends_on:
       - backend
     networks:

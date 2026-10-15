@@ -42,6 +42,17 @@ case "$file_path" in
       echo "[hook] ruff 미설치 — 'pip install -r back-end/requirements-dev.txt' 후부터 린트가 활성화됩니다. 임시로 구문 체크만 수행."
       python3 -m py_compile "$file_path"
     fi
+
+    # 시크릿 하드코딩 / CORS 와일드카드 감지 — 차단은 아니고 경고만(exit 0 유지)
+    if grep -qE 'mongodb(\+srv)?://[^"'"'"' ]*:[^"'"'"' ]*@' "$file_path"; then
+      echo "[hook] 경고: $file_path 에 DB 커넥션 스트링(자격증명 포함)이 하드코딩된 것으로 보입니다. .env 사용 권장."
+    fi
+    if grep -qE 'AKIA[0-9A-Z]{16}' "$file_path"; then
+      echo "[hook] 경고: $file_path 에 AWS Access Key로 보이는 패턴이 하드코딩되어 있습니다. .env 사용 권장."
+    fi
+    if grep -qE 'allow_origins\s*=\s*\[\s*["'"'"']\*["'"'"']' "$file_path"; then
+      echo "[hook] 경고: $file_path 의 CORS allow_origins가 와일드카드(*)로 설정되어 있습니다. mixxtopia.site 도메인만 허용해야 합니다."
+    fi
     ;;
   *)
     exit 0

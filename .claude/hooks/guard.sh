@@ -21,6 +21,9 @@ danger_patterns=(
   "systemctl restart mixxtopia"
   "systemctl reload nginx"
   "systemctl stop mixxtopia"
+  # 배포 서버로의 직접 SSH 접속 자체도 금지 — Claude의 Bash 호출만 막음
+  # (사용자가 터미널에서 직접 ssh 하는 건 이 훅과 무관)
+  "ssh "
   # MongoDB/Redis 대량 삭제 방지 — 총공(hashtag) 서비스가 이 데이터에 의존
   "dropDatabase"
   "\.drop()"

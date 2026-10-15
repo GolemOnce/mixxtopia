@@ -9,92 +9,12 @@ NMIXX(또는 추후 타 아티스트 추가 가능) 팬을 위한 덕질 도구 
 
 ## 기능
 
-- 메인 화면에서 현재 멜론/벅스/지니/플로/바이브/유튜브뮤직 등 주요 음원사이트에서 NMIXX 곡들의 순위(실시간/일간)표시, 컴백 예정일 등록 시 컴백 카운트다운 시간 표시, 공식적으로 알려진 가장 이른 스케줄 표시(카운트다운과 함께)
-- 그룹/음반/음원/콘서트/팬미팅/방송활동 이력 소개 페이지 (정적 콘텐츠 위주)
-- 스케줄표: 방송출연, 시상식, 음악축제, 콘서트, 팬미팅, 팬싸 등 **합법적으로 공개된 스케줄만** 다룸.
-  - 달력, 게시판 형태 중 선택 조회 가능. 기본값은 달력.
-    - 달력: 년/월 선택(기본값은 현재 날짜의 년/월) 월달력 표시. 스케줄이 있는 날에 마크(스케줄 종류 별 색깔 구분)하고, 해당 일자의 칸 클릭 시  확장돼서 어떤 스케줄인지 간략하게 표시(여러 스케줄이 있을 수 있으니 리스트 형태). 스케줄 클릭 시 모달창 뜨면서 상세 정보 조회 가능.
-    - 게시판: 년/월 선택(기본값은 현재 날짜의 년/월) 1일부터 말일까지 하루에 한 칸, 스케줄이 있는 날에 스케줄 간략하게 표시. 클릭 시 모달창 뜨면서 상세 정보 조회 가능.
-  - 크롤링, 수동 등록 모두 가능하게 함.
-- 투표 일정: 여러 투표 관련 매체(벅스, 멜론, 엠넷플러스 등의 음원서비스나 팬앤스타, 빅크, 쿠궁 등 시상식 관련)에서 진행되는 투표
-  - 기본적으로 현재 진행중인 투표가 상단에 표시
-  - (다른 형태 추후 추가 고려) 가로가 1.2배정도 긴, 둥근 모서리, 테두리가 투명한 직사각형 형태 카드 형식으로 출력. 
-  - 지난 투표 조회, 매체별 투표 조회 등도 지원.
-  - 크롤링, 수동 등록 모두 가능하게 함.
-- 사진 검색: 공식 X(트위터)/틱톡/인스타/화보/광고 사진 등 DB화하고 사진 유사도로 언제 사진인지 찾는 기능.
-  - **버블·팬클럽 전용 유료 미디어는 절대 포함 금지** — 저작권/약관 위반 소지
-  - 사진 등록은 크롤링, 수동 등록 모두 가능하게 함.
-- 커뮤니티 (공지, 질문, 자유, 건의게시판 등 기본적인 CRUD)
-  - 공지글은 관리자(admin, manager)만 작성 가능, 건의글은 관리자(admin, manager)만 조회 가능
-- 트위터(X) 총공(해시태그 챌린지) 페이지 — **이미 구현되어 있음**
-- 플레이리스트 커스텀 페이지(권장 스밍리스트(음원총공팀(나)에서 지정해주는 스밍리스트)/커스텀 플레이리스트 제작 기능 제공)
-  - 플레이리스트 만들고 원클릭 링크 변환하는 기능까지 추가
-```
-원클릭 링크 변환 예시)
-(멜론)
-안드-앱 `melonapp://play?menuid=0&ctype=1&cid=곡번호`. 곡끼리 `,`로 구분. 하나의 링크에 중복 곡 불가능. 중복 곡 있을 경우 새 링크에 추가
-1
-melonapp://play?menuid=0&ctype=1&cid=38667195,38667196,38667198,38609054,38667200
-2
-melonapp://play?menuid=0&ctype=1&cid=38667195,38667196,38667197,38609054,37120976
-3
-melonapp://play?menuid=0&ctype=1&cid=38667195,38667198,38667200,38609054,37900204
-4
-melonapp://play?menuid=0&ctype=1&cid=38667195,38667196,38667197,38667198,38609054,38667200
+제품 기능 명세는 GitHub Issues(label: [`product-spec`](https://github.com/GolemOnce/mixxtopia/issues?q=label%3Aproduct-spec))에서 도메인별로 관리한다(#1~#7). 도메인별 구현은 `back-end/app/router,service/`, `front-end/src/pages/`에서 확인.
 
-아이폰 `meloniphone://play/?ctype=1&menuid=0&cid=곡번호`. 곡끼리 `,`로 구분. 하나의 링크에 중복 곡 가능
-meloniphone://play/?ctype=1&menuid=0&cid=38667195,38667196,38667198,38609054,38667200,38667195,38667196,38667197,38609054,37120976,38667195,38667198,38667200,38609054,37900204,38667195,38667196,38667197,38667198,38609054,38667200
+- 트위터(X) 총공(해시태그 챌린지) 페이지 — **이미 구현되어 있음**(`router/bustercall.py`, `pages/BusterCall.tsx`)
 
-아이패드 `melonipad://play/?ctype=1&menuid=0&cid=곡번호`. 곡끼리 `,`로 구분. 하나의 링크에 중복 곡 불가능. 중복 곡 있을 경우 새 링크에 추가
-1
-melonipad://play/?ctype=1&menuid=0&cid=38667195,38667196,38667198,38609054,38667200
-2
-melonipad://play/?ctype=1&menuid=0&cid=38667195,38667196,38667197,38609054,37120976
-3
-melonipad://play/?ctype=1&menuid=0&cid=38667195,38667198,38667200,38609054,37900204
-4
-melonipad://play/?ctype=1&menuid=0&cid=38667195,38667196,38667197,38667198,38609054,38667200
-
-웹 `melonapp://play/?cType=1&menuId=1000002721&cList=곡번호`. 곡끼리 `,`로 구분. 하나의 링크에 중복 곡 불가능. 중복 곡 있을 경우 새 링크에 추가
-1
-melonapp://play/?cType=1&menuId=1000002721&cList=38667195,38667196,38667198,38609054,38667200
-2
-melonapp://play/?cType=1&menuId=1000002721&cList=38667195,38667196,38667197,38609054,37120976
-3
-melonapp://play/?cType=1&menuId=1000002721&cList=38667195,38667198,38667200,38609054,37900204
-4
-melonapp://play/?cType=1&menuId=1000002721&cList=38667195,38667196,38667197,38667198,38609054,38667200
-
-PC 맥 `melonplayer://play?menuid=0&cflag=1&cid=곡번호`. 곡끼리 `,`로 구분. 하나의 링크에 중복 곡 가능
-melonplayer://play?menuid=0&cflag=1&cid=38667195,38667196,38667198,38609054,38667200,38667195,38667196,38667197,38609054,37120976,38667195,38667198,38667200,38609054,37900204,38667195,38667196,38667197,38667198,38609054,38667200
-
-(벅스) `bugs3://app/tracks/lists?title=전체듣기&miniplay=Y&track_ids=곡번호`. 곡끼리 `|`로 구분. 하나의 링크에 중복 곡 가능
-bugs3://app/tracks/lists?title=전체듣기&miniplay=Y&track_ids=6294415|6294416|6294418|33461414|6294419|6294415|6294416|6294417|33461414|6228208|6294415|6294418|6294419|33461414|33269131|6294415|6294416|6294417|6294418|33461414|6294419
-
-(지니) 
-안드 `cromegenie://scan/?landing_type=31&landing_target=곡번호`. 곡끼리 `;`로 구분. 하나의 링크에 중복 곡 가능
-cromegenie://scan/?landing_type=31&landing_target=109451101;109451102;109451104;109262024;109451105;109451101;109451102;109451103;109262024;105078577;109451101;109451104;109451105;109262024;107502321;109451101;109451102;109451103;109451104;109262024;109451105
-
-아이폰 `ktolleh00167://landing/?landing_type=31&landing_target=곡번호` 곡끼리 `;`로 구분. 하나의 링크에 중복 곡 가능
-ktolleh00167://landing/?landing_type=31&landing_target=109451101;109451102;109451104;109262024;109451105;109451101;109451102;109451103;109262024;105078577;109451101;109451104;109451105;109262024;107502321;109451101;109451102;109451103;109451104;109262024;109451105
-
-웹 `https://www.genie.co.kr/player/shareProcessV2?xgnm=곡번호`. 곡끼리 `;`로 구분. 하나의 링크에 중복 곡 가능
-https://www.genie.co.kr/player/shareProcessV2?xgnm=109451101;109451102;109451104;109262024;109451105;109451101;109451102;109451103;109262024;105078577;109451101;109451104;109451105;109262024;107502321;109451101;109451102;109451103;109451104;109262024;109451105
-
-(플로) `flomusic://play/track?ids=곡번호`. 곡끼리 `,`로 구분. 하나의 링크에 중복 곡 가능
-flomusic://play/track?ids=532965208,532965209,532965211,531601993,532965212,532965208,532965209,532965210,531601993,493362301,532965208,532965211,532965212,531601993,511409336,532965208,532965209,532965210,532965211,531601993,532965212
-
-(바이브) `vibe://listen?version=3&trackIds=곡번호`. 곡끼리 `,`로 구분. 하나의 링크에 중복 곡 불가능. 중복 곡 있을 경우 새 링크에 추가
-1
-vibe://listen?version=3&trackIds=91332517,91332518,91332520,90139573,91332521
-2
-vibe://listen?version=3&trackIds=91332517,91332518,91332519,90139573,82255413
-3
-vibe://listen?version=3&trackIds=91332517,91332520,91332521,90139573,86732094
-4
-vibe://listen?version=3&trackIds=91332517,91332518,91332519,91332520,90139573,91332521
-```
 ## 배포/인프라
+
 - IaC(terraform)로 인프라 관리(초기 상태 : IaC없이 EC2 내에 api 몇개 들어간 1페이지 규모 nginx로 서빙 중)
   - EC2 t3.small 사용 중
   - Docker-Compose를 활용해 하나의 인스턴스(EC2 t3.small)에 어플리케이션과 nginx, Redis를 구동하고, MongoDB는 기존에 설정된 Atlas 그대로 활용
@@ -103,48 +23,10 @@ vibe://listen?version=3&trackIds=91332517,91332518,91332519,91332520,90139573,91
 
 ### 패키지 구조
 
-```
-root
-├── back-end
-│   └── app       
-│       ├── main.py               <-- 메인
-│       ├── database.py           <-- DB 연결
-│       ├── router/               <-- 도메인별 라우터(controller)
-│       │   ├── user.py
-│       │   ├── schedule.py
-│       │   ├── vote.py
-│       │   ├── post.py
-│       │   ├── photo.py
-│       │   ├── bustercall.py
-│       ├── service/              <-- 도메인별 비즈니스 로직(service)
-│       │   ├── user.py
-│       │   ├── schedule.py
-│       │   ├── vote.py
-│       │   ├── post.py
-│       │   ├── photo.py
-│       │   ├── bustercall.py
-│       ├── model/                <-- 도메인별 모델(Entity)
-│       │   ├── user.py
-│       │   ├── schedule.py
-│       │   ├── vote.py
-│       │   ├── post.py
-│       │   ├── photo.py
-│       │   ├── bustercall.py
-│       ├── schemas/              <-- 도메인별 스키마(dto)
-│           ├── user.py
-│           ├── schedule.py
-│           ├── vote.py
-│           ├── post.py
-│           ├── photo.py
-│           ├── bustercall.py
-├── front-end
-├── scripts
-├── docs
-    └─
-```
-- 백엔드는 레이어(model, dto, service등) 우선 분리 후 도메인별 파일로 관리
+- 백엔드는 레이어(model, schemas, service, router) 우선 분리 후 도메인별 파일로 관리(`back-end/app/` 참조)
 
 ### 인증/인가
+
 - JWT(access token 1h - HttpOnly Cookie, refresh token 7d - Redis에 refresh_token:{user_id} 기준 저장)
 - OAuth2 - Gmail, Naver(https도메인 사용중)로만 회원가입 가능
   - 악성 사용자 활동 방지를 위한 IP + 접속기록 수집 동의 서명
@@ -154,10 +36,12 @@ root
 - 건의/이의제기/신고/글/댓글 쓰기 등은 로그인 후 가능
 
 ### 총공(bustercall) 서비스
+
 - 스택: FastAPI + MongoDB(문구/클라이언트/통계) + Redis(카운터 캐시)
 - 엔드포인트: `GET /api/bustercall/reroll`, `POST /api/bustercall/click`, `GET /api/bustercall/stats`, `POST /api/bustercall/campaign`(admin,manager 전용 — 총공 캠페인 등록/전환)
 
 ### database
+
 - 사진을 제외한 도메인은 기본적으로 mongodb(Atlas) 사용하지만, schemas로 엄격히 제한하여 관리
 - Redis를 활용해 자주 조회되는 일정 캐싱
 - 사진/동영상 등 미디어는 S3 storage 저장 + CloudFront 캐싱 활용
@@ -165,6 +49,7 @@ root
   - Lambda 활용해 썸네일, 리사이징 등 이미지 최적화하고, 유저가 최적화된 이미지/원본 이미지 선택해서 다운로드 가능하게 함
 
 ### schemas(dto)
+
 - Pydantic Request/Response
 - 한 파일 내에 Request와 Response 모두 정의
 - dto의 class 이름은 `{도메인}{목적}{Request또는Response} `
@@ -172,10 +57,12 @@ root
 - dto 필드 형식은 name: str 처럼 `필드명: 자료형`으로 작성
 
 ### Logging
+
 - 악성 사용자 활동 방지를 위한 IP + 접속기록 로깅 + 이용약관에 명시
 - 회원가입 시점 IP, 게시글/댓글 작성 시점 IP 3개월 저장
 
 ### 코드 컨벤션
+
 - Black 규칙(ruff format)에 맞는 코드 스타일
   - 최상위 함수/클래스 사이: 2줄
   - 클래스 내부 메서드 사이: 1줄
@@ -184,57 +71,27 @@ root
 - api 리소스는 복수형(post->posts, schedule->schedules, vote->votes), 페이지 주소는 단수형(board, schedule, vote...)
 
 ### API 명세서
+
 - docs/api-spec.md 참조
 
 ### 테이블 명세서
+
 - docs/db-schema.md 참조
 
-## 실행 명령어 (플레이스홀더 — 실제 명령어로 교체 필요)
+## 실행 명령어
 
-```bash
-# 백엔드 (경로: back-end/)
-.venv/Scripts/activate            # Windows
-.venv/bin/activate                # macOS/Linux/WSL
-
-uvicorn app.main:app --reload
-
-# venv를 활성화해도 uvicorn을 못 찾으면(예: CI/CD 스크립트):
-.venv/Scripts/Python.exe -m uvicorn app.main:app --reload   # Windows
-.venv/bin/python -m uvicorn app.main:app --reload           # macOS/Linux/WSL
-
-# 패키지 설치는 uv 사용 (pip보다 훨씬 빠름, pip 호환 — requirements.txt 그대로 사용)
-uv pip install -r requirements.txt
-uv pip install -r requirements-dev.txt   # ruff 등 개발용 도구 포함
-
-# 프론트엔드 (경로: front-end/)
-npm run dev       # 개발 서버
-npm run build     # tsc -b && vite build — front-end/dist/에 정적 파일 생성
-npm run preview   # 빌드 결과 로컬 프리뷰
-
-# 테스트
-# 아직 없음. docs/cicd.md 참고 — 현재 CI에 테스트 단계 없이 CD(배포)만 존재.
-
-# 린트/포맷
-# front-end: ESLint(flat config, eslint.config.js) + typescript-eslint +
-#   eslint-plugin-react-hooks/react-refresh, 포맷은 Prettier.
-npm run lint       # front-end/ — eslint .
-npm run lint:fix    # front-end/ — eslint . --fix
-npm run format      # front-end/ — prettier --write .
-
-# back-end: ruff (린트+포맷+import 정리, back-end/pyproject.toml에 설정).
-uv pip install -r requirements-dev.txt   # back-end/ — ruff 포함 설치
-ruff check .        # back-end/ — 린트
-ruff format .        # back-end/ — 포맷
-
-# .claude/hooks/post_edit_check.sh가 편집 직후 위 도구로 자동 체크함
-# (node_modules/venv에 설치 전이면 tsc --noEmit / py_compile로 폴백).
-```
+- 실행 방법은 `docs/How_to_Run.md` 참조(백엔드/프론트엔드 실행, 패키지 설치, 린트/포맷 전부 포함)
+- `.claude/hooks/post_edit_check.sh`가 Write/Edit 직후 자동으로 린트를 돌림
 
 ## 하지 말아야 할 것
+
 - 정책이 명확히 나와있지 않은 부분은 질문
 - 버블/팬클럽 전용 유료 콘텐츠를 사진 검색 결과에 노출하는 코드 작성 금지
 - 확인되지 않은 팬 스케줄(비공식 루머 등)을 스케줄표 데이터로 넣는 로직 금지
 - 배포 서버(EC2) 직접 SSH 접속/재시작(systemctl restart 등) 금지 — 배포는 반드시
   `.github/workflows/deploy.yml`(main 브랜치 push 시 자동 CD)을 통해서만
+  (`ssh`/`systemctl restart mixxtopia` 등은 `.claude/hooks/guard.sh`가 차단함)
 - JWT/DB 커넥션 스트링 등 시크릿을 코드에 하드코딩 금지, 반드시 .env 사용
+  (`.claude/hooks/post_edit_check.sh`가 back-end 코드 편집 시 하드코딩 패턴을 감지하면 경고)
 - CORS는 mixxtopia.site 도메인만 허용, 와일드카드(*) 금지
+  (`.claude/hooks/post_edit_check.sh`가 `allow_origins=["*"]` 패턴을 감지하면 경고)

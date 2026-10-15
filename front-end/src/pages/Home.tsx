@@ -62,6 +62,34 @@ export default function Home() {
             />
           </div>
         </div>
+        <div className="home-section-label">HighlightMedley</div>
+        <h2 className="home-trailer-title">
+          NMIXX(엔믹스) &quot;Strange Muse&quot; A Cappella Highlight Medley (Choir Ver.)
+        </h2>
+        <div className="content-embeds home-trailer">
+          <div className="embed-youtube">
+            <iframe
+              src="https://www.youtube.com/embed/RI6n1V-eoOA"
+              title="NMIXX(엔믹스) Strange Muse A Cappella Highlight Medley (Choir Ver.)"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+
+        <h2 className="home-trailer-title">
+          NMIXX(엔믹스) &quot;Strange Muse&quot; Original Highlight Medley
+        </h2>
+        <div className="content-embeds home-trailer">
+          <div className="embed-youtube">
+            <iframe
+              src="https://www.youtube.com/embed/TPYAJ13wrwo"
+              title="NMIXX(엔믹스) Strange Muse Original Highlight Medley"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
       </div>
 
       <div className="detail-divider" />

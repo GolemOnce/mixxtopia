@@ -46,3 +46,8 @@ class User(BaseEntity):
 
 async def ensure_indexes() -> None:
     await users_col.create_index([("oauth", 1), ("email", 1)], unique=True, sparse=True)
+    # 닉네임을 직접 입력하는 방식이라 게시글/댓글 작성자 구분을 위해 유일해야 한다.
+    # soft delete된(deleted_at이 있는) 유저는 제외해서, 탈퇴 후 같은 닉네임 재사용 가능.
+    await users_col.create_index(
+        "nickname", unique=True, partialFilterExpression={"deleted_at": None}
+    )

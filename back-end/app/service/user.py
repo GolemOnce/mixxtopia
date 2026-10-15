@@ -1,6 +1,7 @@
 from uuid import UUID, uuid4
 
 from pymongo import ReturnDocument
+from pymongo.errors import DuplicateKeyError
 
 from app.core.access_log import AccessLogAction, write_access_log
 from app.core.config import settings
@@ -30,6 +31,10 @@ class ConsentRequiredError(Exception):
 
 
 class UserAlreadyExistsError(Exception):
+    pass
+
+
+class NicknameAlreadyExistsError(Exception):
     pass
 
 
@@ -63,6 +68,9 @@ async def signup(payload: AuthSignupRequest, ip: str) -> tuple[User, str, str]:
     if await users_col.find_one({"oauth": payload.oauth.value, "email": email}):
         raise UserAlreadyExistsError()
 
+    if await users_col.find_one({"nickname": payload.nickname, "deleted_at": None}):
+        raise NicknameAlreadyExistsError()
+
     user_id = uuid4()
     now = utcnow()
     user = User(
@@ -79,7 +87,10 @@ async def signup(payload: AuthSignupRequest, ip: str) -> tuple[User, str, str]:
 
     doc = user.model_dump(mode="json")
     doc["_id"] = doc.pop("user_id")
-    await users_col.insert_one(doc)
+    try:
+        await users_col.insert_one(doc)
+    except DuplicateKeyError as exc:
+        raise NicknameAlreadyExistsError() from exc
     await write_access_log(user_id, ip, AccessLogAction.signup)
 
     access_token, refresh_token = await _issue_tokens(user_id)
@@ -130,11 +141,19 @@ async def get_profile(user_id: str) -> User:
 
 
 async def update_profile(user_id: str, nickname: str, actor_id: UUID) -> User:
-    doc = await users_col.find_one_and_update(
-        {"_id": user_id, "deleted_at": None},
-        {"$set": {"nickname": nickname, "updated_at": utcnow(), "updated_by": str(actor_id)}},
-        return_document=ReturnDocument.AFTER,
-    )
+    if await users_col.find_one(
+        {"nickname": nickname, "deleted_at": None, "_id": {"$ne": user_id}}
+    ):
+        raise NicknameAlreadyExistsError()
+
+    try:
+        doc = await users_col.find_one_and_update(
+            {"_id": user_id, "deleted_at": None},
+            {"$set": {"nickname": nickname, "updated_at": utcnow(), "updated_by": str(actor_id)}},
+            return_document=ReturnDocument.AFTER,
+        )
+    except DuplicateKeyError as exc:
+        raise NicknameAlreadyExistsError() from exc
     if not doc:
         raise UserNotFoundError()
     return User.from_doc(doc)

@@ -58,6 +58,8 @@ async def signup(payload: AuthSignupRequest, request: Request, response: Respons
         ) from exc
     except user_service.UserAlreadyExistsError as exc:
         raise HTTPException(status.HTTP_409_CONFLICT, "이미 가입된 계정입니다.") from exc
+    except user_service.NicknameAlreadyExistsError as exc:
+        raise HTTPException(status.HTTP_409_CONFLICT, "이미 사용 중인 닉네임입니다.") from exc
     except OAuthVerificationError as exc:
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED, "유효하지 않은 OAuth access token입니다."
@@ -152,6 +154,8 @@ async def update_profile(
         user = await user_service.update_profile(user_id, payload.nickname, current_user.user_id)
     except user_service.UserNotFoundError as exc:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "존재하지 않는 사용자입니다.") from exc
+    except user_service.NicknameAlreadyExistsError as exc:
+        raise HTTPException(status.HTTP_409_CONFLICT, "이미 사용 중인 닉네임입니다.") from exc
     return UserProfileResponse(user_id=str(user.user_id), nickname=user.nickname)
 
 

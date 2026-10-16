@@ -52,6 +52,7 @@
 
 ## schedules(schedule.py)
 스케줄 조회	GET	/schedules	스케줄	all
+등록된 카테고리 목록 조회	GET	/schedules/categories	스케줄	all
 스케줄 상세 조회	GET	/schedules/{schedule_id}	스케줄	all
 스케줄 등록	POST	/schedules	스케줄	admin,manager
 스케줄 수정	PATCH	/schedules/{schedule_id}	스케줄	admin,manager
@@ -62,6 +63,7 @@
 - 등록/수정 시 start_at > end_at이면 400
 - 삭제는 soft delete(BaseEntity의 deleted_at)
 - "합법적으로 공개된 스케줄만" 정책은 코드로 검증할 수 없는 항목이라(비공식 루머 여부 판단 불가) admin/manager만 쓸 수 있게 하는 권한 제한 + 운영 정책으로 지킴
+- `GET /schedules`는 year+month 등 필터 없이 호출돼도 응답이 무한정 커지지 않도록 최대 500건으로 제한됨(`MAX_LIST_LIMIT`). 카테고리 자동완성처럼 필터링된 값만 필요하면 `GET /schedules/categories`(distinct 조회, 응답 매우 작음)를 쓸 것 — 과거 이 용도로 `GET /schedules` 전체를 필터 없이 호출해 1MB+ 응답을 매번 받아오던 버그가 있었음
 
 ## photos(photo.py)
 사진 목록 조회	GET	/photos	사진	all

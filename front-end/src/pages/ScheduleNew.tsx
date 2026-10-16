@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 
 import { api, authErrorMessage } from '../api/client'
 import { toIso } from '../lib/date'
-import { categoryLabel, SUGGESTED_CATEGORIES, type ScheduleItem } from '../lib/scheduleCategories'
+import { categoryLabel, SUGGESTED_CATEGORIES } from '../lib/scheduleCategories'
 
 export default function ScheduleNew() {
   const navigate = useNavigate()
@@ -25,8 +25,8 @@ export default function ScheduleNew() {
 
   useEffect(() => {
     api
-      .get<ScheduleItem[]>('/api/schedules')
-      .then((data) => setExistingCategories(Array.from(new Set(data.map((s) => s.category)))))
+      .get<string[]>('/api/schedules/categories')
+      .then((data) => setExistingCategories(data))
       .catch(() => {})
   }, [])
 

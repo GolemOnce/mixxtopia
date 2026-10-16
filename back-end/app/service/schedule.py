@@ -15,6 +15,11 @@ class InvalidTimeRangeError(Exception):
     pass
 
 
+# year/month 등 아무 필터 없이 호출되는 경우(ScheduleNew.tsx의 카테고리 자동완성 등)를 대비한
+# 상한선. 달력 뷰(연/월 필터)는 실제로 이 한도에 걸릴 만큼 한 달에 일정이 쌓이지 않는다.
+MAX_LIST_LIMIT = 500
+
+
 async def list_schedules(
     category: str | None = None,
     member: str | None = None,
@@ -32,7 +37,13 @@ async def list_schedules(
         query["start_at"] = {"$lt": range_end_exclusive}
         query["end_at"] = {"$gte": range_start}
 
-    return [doc async for doc in schedules_col.find(query).sort("start_at", 1)]
+    return [
+        doc async for doc in schedules_col.find(query).sort("start_at", 1).limit(MAX_LIST_LIMIT)
+    ]
+
+
+async def list_categories() -> list[str]:
+    return await schedules_col.distinct("category", {"deleted_at": None})
 
 
 async def get_schedule(schedule_id: str) -> dict:

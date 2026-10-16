@@ -63,6 +63,11 @@ async def list_schedules(
     return [_to_response(doc) for doc in docs]
 
 
+@router.get("/categories", response_model=list[str])
+async def list_schedule_categories():
+    return await schedule_service.list_categories()
+
+
 @router.get("/{schedule_id}", response_model=ScheduleResponse)
 async def get_schedule(schedule_id: str):
     try:

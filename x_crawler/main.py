@@ -12,7 +12,7 @@ import yaml
 from playwright.async_api import BrowserContext, async_playwright
 
 from . import mongo_sync, s3_upload
-from .browser import RateLimited, crawl_account
+from .browser import RateLimited, SessionExpired, crawl_account
 from .formatter import build_post, save_post
 from .media import download_all
 from .models import Tweet
@@ -145,6 +145,7 @@ async def run(
                 "(KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"
             ),
         )
+        session_expired = False
         try:
             for i, acc in enumerate(accounts):
                 if i > 0:
@@ -157,8 +158,21 @@ async def run(
                 except RateLimited:
                     log.warning("rate limit → 남은 계정은 다음 실행으로 미룸")
                     break
-            if not guest:
-                await context.storage_state(path=str(BASE_DIR / cfg["session_path"]))  # 갱신된 쿠키 저장
+                except SessionExpired:
+                    # 로그인 세션이 깨진 채로 끝까지 돌면 guest 쿠키가 쌓여서, 아래에서
+                    # state.json에 그 쿠키를 저장해버리면 멀쩡했던 세션까지 덮어써진다.
+                    # 저장을 아예 건너뛰어 기존 세션을 보존한다 — save_session.py/
+                    # import_cookies.py로 다시 세션을 만들어야 함.
+                    log.error("[%s] 세션 만료됨 → state.json 저장 건너뜀, 세션 재발급 필요", acc["username"])
+                    session_expired = True
+                    break
+
+            if not guest and not session_expired:
+                cookies = await context.cookies()
+                if any(c["name"] == "auth_token" and c["value"] for c in cookies):
+                    await context.storage_state(path=str(BASE_DIR / cfg["session_path"]))  # 갱신된 쿠키 저장
+                else:
+                    log.error("auth_token 쿠키가 없어 로그인되지 않은 것으로 보임 → state.json 저장 건너뜀")
         finally:
             await browser.close()
 

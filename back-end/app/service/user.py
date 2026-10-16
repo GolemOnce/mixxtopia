@@ -97,7 +97,7 @@ async def signup(payload: AuthSignupRequest, ip: str) -> tuple[User, str, str]:
     return user, access_token, refresh_token
 
 
-async def login(payload: AuthLoginRequest) -> tuple[User, str, str]:
+async def login(payload: AuthLoginRequest, ip: str) -> tuple[User, str, str]:
     email = await fetch_oauth_email(payload.oauth, payload.access_token)
     if not email:
         raise OAuthEmailRequiredError()
@@ -110,11 +110,13 @@ async def login(payload: AuthLoginRequest) -> tuple[User, str, str]:
 
     user = User.from_doc(doc)
     access_token, refresh_token = await _issue_tokens(user.user_id)
+    await write_access_log(user.user_id, ip, AccessLogAction.login)
     return user, access_token, refresh_token
 
 
-async def logout(user_id: UUID) -> None:
+async def logout(user_id: UUID, ip: str) -> None:
     await redis_client.delete(REFRESH_TOKEN_KEY.format(user_id=user_id))
+    await write_access_log(user_id, ip, AccessLogAction.logout)
 
 
 async def refresh(refresh_token: str) -> tuple[UUID, str, str]:

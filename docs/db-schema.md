@@ -31,13 +31,14 @@
 ## access_logs(신규, 접속기록)
 - user_id	UUID	접속한 사용자(users_id 참조)
 - ip	varchar(45)	접속 IP
-- action	enum	기록 사유(signup, post_create, comment_create)
+- action	enum	기록 사유(signup, login, logout, post_create, comment_create)
 - created_at	TIMESTAMP	기록 시각
 
 ### 참고
 - 최초 명세에는 없던 컬렉션. CLAUDE.md "회원가입 시점 IP, 게시글/댓글 작성 시점 IP 3개월 저장" 요구사항 구현을 위해 추가
 - created_at 기준 TTL 인덱스(90일)로 자동 만료
-- 현재는 회원가입 시점만 기록. 게시글/댓글 작성 시 기록은 해당 도메인 구현 시 app.core.access_log.write_access_log 재사용 예정
+- "악성 사용자 활동 방지"라는 수집 목적에 맞춰 계정 단위 행위(가입/로그인/로그아웃/글·댓글 작성)만 기록한다 — 조회성 API/페이지 호출까지는 범위를 넓히지 않음(의도적 결정, 전면 요청 로깅은 수집 목적/약관 범위를 벗어남)
+- `GET /api/access-logs`(admin 전용, manager도 불가)로 조회 가능. user_id/action 쿼리파라미터로 필터링, created_at 내림차순, 페이지네이션(page/page_size)
 
 ## officials(official.py)
 - official_id	UUID	PK

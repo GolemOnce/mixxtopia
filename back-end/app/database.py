@@ -4,7 +4,11 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 from app.core.config import settings
 
-mongo_client = AsyncIOMotorClient(settings.mongodb_uri)
+# tz_aware=True가 없으면 BSON Date를 읽어올 때 타임존 정보 없는(naive) datetime으로
+# 돌아와서, API 응답 JSON에 UTC 표시(Z/+00:00)가 안 붙어 프론트가 로컬시간으로 오인한다
+# (access_logs.created_at처럼 모델을 거치지 않고 datetime 객체를 그대로 저장하는 필드에서
+# 특히 문제가 됨 — 다른 도메인은 model_dump(mode="json")으로 문자열 저장이라 영향 없음).
+mongo_client = AsyncIOMotorClient(settings.mongodb_uri, tz_aware=True)
 redis_client = aioredis.Redis(
     host=settings.redis_host, port=settings.redis_port, decode_responses=True
 )

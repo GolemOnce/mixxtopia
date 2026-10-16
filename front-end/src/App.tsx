@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom'
 import Footer from './components/Footer'
 import NavBar from './components/NavBar'
 import RequireAdmin from './components/RequireAdmin'
+import AdminAccessLog from './pages/AdminAccessLog'
 import AdminBustercall from './pages/AdminBustercall'
 import AdminHome from './pages/AdminHome'
 import AdminPlaylist from './pages/AdminPlaylist'
@@ -90,6 +91,14 @@ export default function App() {
           element={
             <RequireAdmin>
               <AdminPlaylist />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/admin/access-log"
+          element={
+            <RequireAdmin adminOnly>
+              <AdminAccessLog />
             </RequireAdmin>
           }
         />

@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom'
 
+import { useCurrentUser } from '../auth/useCurrentUser'
+
 export default function AdminHome() {
+  const { user } = useCurrentUser()
+
   return (
     <div className="card">
       <div className="row">
@@ -18,6 +22,12 @@ export default function AdminHome() {
       <div className="row">
         <Link to="/vote/new">투표 등록</Link>
       </div>
+      {/* manager는 접근 불가(admin 전용)라 링크 자체를 안 보여줌 */}
+      {user?.role === 'admin' && (
+        <div className="row">
+          <Link to="/admin/access-log">접속기록</Link>
+        </div>
+      )}
     </div>
   )
 }

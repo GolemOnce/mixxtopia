@@ -76,9 +76,11 @@ async def signup(payload: AuthSignupRequest, request: Request, response: Respons
     response_model=AuthLoginResponse,
     dependencies=[Depends(rate_limit("login", 10, 60))],
 )
-async def login(payload: AuthLoginRequest, response: Response):
+async def login(payload: AuthLoginRequest, request: Request, response: Response):
     try:
-        user, access_token, refresh_token = await user_service.login(payload)
+        user, access_token, refresh_token = await user_service.login(
+            payload, get_client_ip(request)
+        )
     except user_service.OAuthEmailRequiredError as exc:
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST, "OAuth 계정에서 이메일을 가져올 수 없습니다."
@@ -99,8 +101,10 @@ async def login(payload: AuthLoginRequest, response: Response):
 
 
 @auth_router.post("/logout", response_model=AuthLogoutResponse)
-async def logout(response: Response, current_user: User = Depends(get_current_user)):
-    await user_service.logout(current_user.user_id)
+async def logout(
+    request: Request, response: Response, current_user: User = Depends(get_current_user)
+):
+    await user_service.logout(current_user.user_id, get_client_ip(request))
     clear_auth_cookies(response)
     return AuthLogoutResponse(ok=True)
 

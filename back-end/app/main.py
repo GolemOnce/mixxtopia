@@ -14,6 +14,7 @@ from app.model.suggest import ensure_indexes as ensure_suggest_indexes
 from app.model.user import ensure_indexes as ensure_user_indexes
 from app.model.vote import ensure_indexes as ensure_vote_indexes
 from app.router import (
+    access_log,
     bustercall,
     comment,
     link_preview,
@@ -49,6 +50,7 @@ app.include_router(comment.router)
 app.include_router(suggest.router)
 app.include_router(photo.router)
 app.include_router(playlist.router)
+app.include_router(access_log.router)
 
 
 @app.on_event("startup")

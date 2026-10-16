@@ -148,6 +148,14 @@
 - `POST /suggests/{suggest_id}`(처리 완료)는 상태를 무조건 done으로 전환(멱등)
 - 프론트에는 created_by/updated_by/deleted_by 비노출(내부 감사용, 다른 도메인과 동일)
 
+## access-logs(access_log.py)
+접속기록 조회	GET	/access-logs	접속기록	admin
+
+### 참고
+- manager도 접근 불가, admin만(계정 단위 행위 기록이라 다른 도메인의 admin,manager 조합보다 더 좁게 제한)
+- `action`(signup/login/logout/post_create/comment_create), `user_id` 쿼리파라미터로 필터링, `page`/`page_size`(기본 20)로 페이지네이션, created_at 내림차순
+- 조회·호출(읽기 전용 API/페이지 방문)은 기록 대상이 아님 — nginx/uvicorn 컨테이너 로그가 이미 모든 요청을 남기고 있어 중복(docs/db-schema.md의 access_logs 참고)
+
 ## link-preview(link_preview.py)
 링크 미리보기	GET	/link-preview	링크미리보기	all
 

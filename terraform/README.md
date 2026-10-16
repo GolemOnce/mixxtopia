@@ -120,8 +120,8 @@ S3_ENDPOINT_URL="" \
 S3_ACCESS_KEY=<AWS Access Key> \
 S3_SECRET_KEY=<AWS Secret Key> \
 S3_REGION=ap-northeast-2 \
-S3_BUCKET=$(cd terraform && terraform output -raw media_bucket_name) \
-S3_PUBLIC_BASE_URL=https://$(cd terraform && terraform output -raw cloudfront_domain) \
+S3_BUCKET=$(cd terraform && AWS_PROFILE=mixxtopia terraform output -raw media_bucket_name) \
+S3_PUBLIC_BASE_URL=https://$(cd terraform && AWS_PROFILE=mixxtopia terraform output -raw cloudfront_domain) \
 python -m x_crawler.recover_s3
 ```
 

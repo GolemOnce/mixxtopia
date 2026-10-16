@@ -12,10 +12,12 @@ load_dotenv(Path(__file__).resolve().parent / ".env")
 MONGODB_URI = os.environ.get("MONGODB_URI", "mongodb://localhost:27018")
 MONGODB_DB = os.environ.get("MONGODB_DB", "mixxtopia")
 
-S3_ENDPOINT_URL = os.environ.get("S3_ENDPOINT_URL", "http://localhost:4566")
+# 빈 문자열("")로 지정하면 LocalStack이 아닌 실제 AWS S3를 쓰겠다는 뜻이므로, boto3가
+# 받아들이는 None으로 바꿔준다(빈 문자열 그대로 넘기면 "Invalid endpoint" 에러가 난다).
+S3_ENDPOINT_URL = os.environ.get("S3_ENDPOINT_URL", "http://localhost:4566") or None
 S3_ACCESS_KEY = os.environ.get("S3_ACCESS_KEY", "test")
 S3_SECRET_KEY = os.environ.get("S3_SECRET_KEY", "test")
-S3_REGION = os.environ.get("S3_REGION", "us-east-1")
+S3_REGION = os.environ.get("S3_REGION", "ap-northeast-2")
 S3_BUCKET = os.environ.get("S3_BUCKET", "mixxtopia-media")
 # 프로덕션에서는 CloudFront 도메인으로 교체. 로컬은 LocalStack을 path-style로 그대로 공개 노출.
 # .env.example처럼 빈 문자열로 둔 경우도 "안 정해짐"으로 취급해서 기본값을 쓴다

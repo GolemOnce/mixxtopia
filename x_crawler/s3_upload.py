@@ -1,5 +1,6 @@
 """미디어를 S3(프로덕션) 또는 LocalStack(로컬 테스트, S3 호환 API)에 업로드.
 boto3는 endpoint_url만 바꾸면 그대로 붙는다 — 엔드포인트 외엔 코드 차이 없음."""
+
 import json
 import logging
 import mimetypes
@@ -40,6 +41,13 @@ def ensure_bucket() -> None:
         s3.create_bucket(Bucket=env.S3_BUCKET)
         log.info("S3 버킷 생성: %s", env.S3_BUCKET)
 
+    if not env.S3_ENDPOINT_URL:
+        # S3_ENDPOINT_URL이 비어있으면 LocalStack이 아니라 실 AWS S3를 가리키는 것 —
+        # 그 버킷은 terraform(s3_cloudfront.tf)이 이미 private+CloudFront OAC로 관리 중이라
+        # 여기서 public-read 정책을 덮어쓰면 그 설정이 깨진다. 실 S3에서는 건너뛴다.
+        log.info("실 AWS S3로 보여 public-read 정책/CORS 적용을 건너뜀: %s", env.S3_BUCKET)
+        return
+
     policy = {
         "Version": "2012-10-17",
         "Statement": [
@@ -77,7 +85,5 @@ def upload_file(local_path: Path, key: str) -> str:
     브라우저 <video>가 재생을 거부한다(<img>는 내용 보고 알아서 처리해서 상대적으로 관대함) —
     확장자로 추측해서 명시적으로 지정."""
     content_type = mimetypes.guess_type(str(local_path))[0] or "application/octet-stream"
-    _s3().upload_file(
-        str(local_path), env.S3_BUCKET, key, ExtraArgs={"ContentType": content_type}
-    )
+    _s3().upload_file(str(local_path), env.S3_BUCKET, key, ExtraArgs={"ContentType": content_type})
     return f"{env.S3_PUBLIC_BASE_URL}/{key}"

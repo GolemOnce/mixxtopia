@@ -19,6 +19,8 @@ SUGGESTED_SCHEDULE_CATEGORIES = [
     "concert",
     "fanmeeting",
     "fansign",
+    "content",
+    "live",
     "etc",
 ]
 
@@ -38,6 +40,10 @@ class Schedule(BaseEntity):
     location: str = Field(min_length=1, max_length=50)
     start_at: datetime
     end_at: datetime
+    # officials 트윗에서 자동 추출한 스케줄(유튜브 콘텐츠/라이브 등)만 채워진다. 수동 등록은
+    # None — 크롤러가 같은 트윗을 다시 가져와도 이 값으로 중복 생성을 막는 용도일 뿐,
+    # API 요청/응답 스키마에는 노출하지 않는다(관리자가 직접 다룰 값이 아니라서).
+    source_official_id: str | None = None
 
     @classmethod
     def from_doc(cls, doc: dict) -> "Schedule":
@@ -48,3 +54,4 @@ async def ensure_indexes() -> None:
     await schedules_col.create_index("start_at")
     await schedules_col.create_index("category")
     await schedules_col.create_index("member")
+    await schedules_col.create_index("source_official_id", unique=True, sparse=True)

@@ -6,9 +6,14 @@ from app.model.user import User, UserRole, users_col
 
 
 def get_client_ip(request: Request) -> str:
-    forwarded_for = request.headers.get("x-forwarded-for")
-    if forwarded_for:
-        return forwarded_for.split(",")[0].strip()
+    """X-Forwarded-For는 클라이언트가 임의로 덧붙여 보낼 수 있어(nginx가
+    $proxy_add_x_forwarded_for로 기존 값 뒤에 실제 IP를 "추가"만 하기 때문에,
+    첫 번째 값을 그대로 믿으면 가짜 IP로 rate limit/접속기록을 조작할 수 있었음).
+    X-Real-IP는 nginx.conf에서 $remote_addr로 항상 덮어써서 보내므로 이것만 신뢰한다."""
+
+    real_ip = request.headers.get("x-real-ip")
+    if real_ip:
+        return real_ip.strip()
     return request.client.host if request.client else "unknown"
 
 

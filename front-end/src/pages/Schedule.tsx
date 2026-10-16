@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { api, authErrorMessage } from '../api/client'
 import { useCurrentUser } from '../auth/useCurrentUser'
+import LinkifiedText from '../components/LinkifiedText'
 import LinkPreview from '../components/LinkPreview'
 import Modal from '../components/Modal'
 import {
@@ -406,8 +407,10 @@ export default function Schedule() {
           {modalSchedule.member.length > 0 && (
             <div className="muted">멤버: {modalSchedule.member.join(', ')}</div>
           )}
-          {modalSchedule.link && <LinkPreview url={modalSchedule.link} />}
-          {modalSchedule.content && <pre>{modalSchedule.content}</pre>}
+          {modalSchedule.content && <LinkifiedText text={modalSchedule.content} />}
+          {modalSchedule.link && !modalSchedule.content.includes(modalSchedule.link) && (
+            <LinkPreview url={modalSchedule.link} />
+          )}
           {isAdmin && (
             <div className="row">
               <button type="button" onClick={() => handleDelete(modalSchedule.schedule_id)}>

@@ -154,9 +154,9 @@
 - db에서 "mixxtopia" Database의 "phrases" 컬렉션에서 category와 detail조합으로
 - member는 생일일 경우 단일 멤버 이름(lily, haewon, sullyoon, bae, jiwoo, kyujin)으로, 컴백이나 n주년은 nmixx로 구분.
 - 유동문구1+고정문구1+유동문구2+고정문구2+유동문구3 으로 조합됨(app.service.bustercall의 get_phrases)
-- is_current는 최초 명세에 없던 필드로, 관리자가 캠페인을 등록/전환하면 해당 문서만 is_current=true, 나머지는 false로 내리기 위해 추가함
+- is_current는 최초 명세에 없던 필드로, 관리자가 캠페인을 전환하면 해당 문서만 is_current=true, 나머지는 false로 내리기 위해 추가함. 등록(POST) 시점엔 항상 false(초안)이고, 전환(activate)을 따로 호출해야 true가 됨
 - (category, detail, member) 조합에 unique index(partial, deleted_at:None인 문서끼리만) — member까지 포함해야 같은 해에 생일인 멤버가 둘 이상이어도 서로 다른 캠페인으로 구분됨(category+detail만으로는 충돌). soft delete 후엔 같은 조합으로 재등록 가능
-- `GET /bustercall/reroll`은 is_current=true 문서를 조회하며, Redis(`hashtag:phrases`)에 캐싱해 매 요청마다 Mongo를 조회하지 않음. 캠페인 등록/수정/삭제 시 캐시도 함께 갱신(write-through)
+- `GET /bustercall/reroll`은 is_current=true 문서를 조회하며, Redis(`hashtag:phrases`)에 캐싱해 매 요청마다 Mongo를 조회하지 않음. 전환(activate) 시 캐시도 함께 갱신(write-through), 진행 중인 캠페인의 문구를 수정(PATCH)한 경우도 캐시 갱신
 - 기존 "hashtag" Mongo DB(레거시 총공 DB)는 더 이상 쓰지 않고 mixxtopia DB의 phrases 컬렉션으로 통합함(레거시로 이관된 기존 문서 1건은 BaseEntity 필드 없이 그대로 둠 — 더 이상 수정될 일 없는 데이터라 소급 반영 안 함)
 - 원래 별도 컬렉션이었던 record(총공 집계 로그)를 여기로 통합함 — 캠페인당 문서가 1개뿐이라 분리 실익이 적었음. 단, 같은 캠페인을 여러 번 재실행(sync)하면 total_clicks/unique_clients/synced_at은 최신 값으로 덮어써지고 과거 회차별 집계 이력은 남지 않음(필요해지면 별도 로그로 재분리)
 - 관리자 페이지의 "기존 캠페인 목록(최신순)" 조회는 updated_at 기준 정렬. 프론트에는 created_by/updated_by/deleted_by를 노출하지 않음(내부 감사용)

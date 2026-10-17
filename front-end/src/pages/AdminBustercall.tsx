@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { CATEGORY_LABELS, type BustercallCategory } from '../lib/bustercall'
+import { formatDateTimeKST } from '../lib/date'
 
 type Category = BustercallCategory
 type Pair = [string, string, string]
@@ -15,6 +16,9 @@ interface Campaign {
   fixed2: string
   fixed4: string
   is_current: boolean
+  total_clicks: number | null
+  unique_clients: number | null
+  synced_at: string | null
 }
 
 const NEW_CAMPAIGN = 'new'
@@ -58,6 +62,7 @@ export default function AdminBustercall() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const isEditing = selectedId !== NEW_CAMPAIGN
+  const selectedCampaign = campaigns.find((c) => c.phrases_id === selectedId)
 
   async function loadCampaigns() {
     setLoadingList(true)
@@ -180,6 +185,77 @@ export default function AdminBustercall() {
     }
   }
 
+  async function handleActivate() {
+    if (!isEditing) return
+    if (
+      !confirm(
+        '이 캠페인을 현재 캠페인으로 전환할까요?\n(전환 전에 이전 캠페인의 "총공 데이터 저장"을 먼저 했는지 확인하세요 — 안 하면 집계가 끊깁니다)',
+      )
+    )
+      return
+
+    setError(null)
+    setSuccessMessage(null)
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/bustercall/campaigns/${selectedId}/activate`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+      if (!res.ok) {
+        const body = await fetchJson(res)
+        setError(
+          res.status === 401 || res.status === 403
+            ? '관리자 로그인이 필요합니다.'
+            : (body?.detail ?? `전환 실패 (${res.status})`),
+        )
+        return
+      }
+
+      const saved: Campaign = await res.json()
+      setSuccessMessage(`전환 완료: ${campaignLabel(saved)}`)
+      await loadCampaigns()
+    } catch {
+      setError('요청 중 오류가 발생했습니다.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleSyncStats() {
+    if (!isEditing) return
+    if (!confirm('현재 집계(Redis)를 캠페인에 저장하고 카운터를 초기화할까요?')) return
+
+    setError(null)
+    setSuccessMessage(null)
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/bustercall/campaigns/${selectedId}/sync-stats`, {
+        method: 'POST',
+        credentials: 'include',
+      })
+      if (!res.ok) {
+        const body = await fetchJson(res)
+        setError(
+          res.status === 401 || res.status === 403
+            ? '관리자 로그인이 필요합니다.'
+            : (body?.detail ?? `저장 실패 (${res.status})`),
+        )
+        return
+      }
+
+      const saved: Campaign = await res.json()
+      setSuccessMessage(
+        `총공 데이터 저장 완료: 클릭 ${saved.total_clicks ?? 0}회 / 참여자 ${saved.unique_clients ?? 0}명`,
+      )
+      await loadCampaigns()
+    } catch {
+      setError('요청 중 오류가 발생했습니다.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   async function handleDelete() {
     if (!isEditing) return
     if (!confirm('이 캠페인을 삭제할까요? (완전 삭제가 아니라 목록에서만 사라집니다)')) return
@@ -236,6 +312,15 @@ export default function AdminBustercall() {
         {loadingList && <span className="muted">목록 불러오는 중...</span>}
       </div>
       {listError && <div className="muted warn">{listError}</div>}
+      {isEditing && selectedCampaign && (
+        <div className="muted">
+          {selectedCampaign.is_current ? '진행중' : '비활성'} · 클릭{' '}
+          {selectedCampaign.total_clicks ?? '-'}회 · 참여자 {selectedCampaign.unique_clients ?? '-'}
+          명
+          {selectedCampaign.synced_at &&
+            ` · 마지막 저장: ${formatDateTimeKST(selectedCampaign.synced_at)}`}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <div className="row">
@@ -334,8 +419,18 @@ export default function AdminBustercall() {
 
         <div className="row">
           <button className="primary" type="submit" disabled={submitting}>
-            {submitting ? '저장 중...' : isEditing ? '캠페인 수정/전환' : '새 캠페인 등록'}
+            {submitting ? '저장 중...' : isEditing ? '캠페인 수정' : '새 캠페인 등록'}
           </button>
+          {isEditing && !selectedCampaign?.is_current && (
+            <button type="button" onClick={handleActivate} disabled={submitting}>
+              캠페인 전환
+            </button>
+          )}
+          {isEditing && selectedCampaign?.is_current && (
+            <button type="button" onClick={handleSyncStats} disabled={submitting}>
+              총공 데이터 저장
+            </button>
+          )}
           {isEditing && (
             <button type="button" onClick={handleDelete} disabled={submitting}>
               캠페인 삭제

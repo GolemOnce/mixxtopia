@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, Field
 
 from app.model.bustercall import BustercallCategory
@@ -27,3 +29,6 @@ class BustercallCampaignResponse(BaseModel):
     fixed2: str
     fixed4: str
     is_current: bool
+    total_clicks: int | None = None
+    unique_clients: int | None = None
+    synced_at: datetime | None = None

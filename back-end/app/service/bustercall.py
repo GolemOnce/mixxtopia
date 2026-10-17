@@ -27,6 +27,10 @@ class CampaignNotFoundError(Exception):
     pass
 
 
+class CampaignNotCurrentError(Exception):
+    pass
+
+
 def _to_public(doc: dict) -> dict:
     # category/detail/member까지 내려줘야 프론트에서 "{멤버이름} {종류} 해시태그 총공
     # 원클릭" 제목을 조립할 수 있다(생일=member, 컴백/n주년=detail — member는 그
@@ -62,27 +66,6 @@ async def get_phrases() -> dict:
 
 async def list_campaigns() -> list[dict]:
     return [doc async for doc in phrases_col.find({"deleted_at": None}).sort("updated_at", -1)]
-
-
-async def _archive_stats_if_switching(exclude_id: str) -> None:
-    """is_current였던 캠페인이 exclude_id와 다를 때만(=진짜 다른 캠페인으로 전환할 때만)
-    Redis 집계를 그 캠페인 문서에 영구 저장하고 카운터를 리셋한다. 같은 캠페인을 계속
-    현재로 유지한 채 문구만 고치는 경우(진행 중 템플릿 추가 등)는 건드리지 않는다.
-
-    "진행 중인 캠페인은 끝나기 전에 전환하지 않는다"는 운영 규칙을 전제로 한다 — 이
-    전제가 깨지면(테스트 전환 등) 재전환 시 이전 집계가 덮어써질 수 있음을 감수한다."""
-
-    previous = await phrases_col.find_one({"is_current": True, "deleted_at": None})
-    if not previous or previous["_id"] == exclude_id:
-        return
-
-    total = int(await redis_client.get(KEY_TOTAL) or 0)
-    unique_clients = int(await redis_client.scard(KEY_CLIENTS) or 0)
-    await phrases_col.update_one(
-        {"_id": previous["_id"]},
-        {"$set": {"total_clicks": total, "unique_clients": unique_clients, "synced_at": utcnow()}},
-    )
-    await redis_client.delete(KEY_TOTAL, KEY_CLIENTS)
 
 
 async def create_campaign(payload: BustercallCampaignCreateRequest, created_by: UUID) -> dict:
@@ -130,13 +113,9 @@ async def create_campaign(payload: BustercallCampaignCreateRequest, created_by: 
 async def update_campaign(
     phrases_id: str, payload: BustercallCampaignUpdateRequest, updated_by: UUID
 ) -> dict:
-    """기존 캠페인의 문구 내용만 수정하고 is_current로 전환한다. category/detail/member(식별자)는
-    바꾸지 않는다 — 바꾸고 싶으면 새 캠페인으로 등록해야 한다.
-
-    이 함수가 "현재 캠페인"으로 전환되는 유일한 지점이라, 다른 캠페인에서 전환해오는
-    경우에만 그 이전 캠페인의 Redis 집계를 아카이브+리셋한다(_archive_stats_if_switching)."""
-
-    await _archive_stats_if_switching(phrases_id)
+    """기존 캠페인의 문구 내용(pairs/fixed2/fixed4)만 수정한다. category/detail/member(식별자)와
+    is_current는 건드리지 않는다 — "현재 캠페인으로 전환"은 activate_campaign의 책임이다.
+    식별자를 바꾸고 싶으면 새 캠페인으로 등록해야 한다."""
 
     doc = await phrases_col.find_one_and_update(
         {"_id": phrases_id, "deleted_at": None},
@@ -145,7 +124,6 @@ async def update_campaign(
                 "pairs": [list(pair) for pair in payload.pairs],
                 "fixed2": payload.fixed2,
                 "fixed4": payload.fixed4,
-                "is_current": True,
                 "updated_at": utcnow(),
                 "updated_by": str(updated_by),
             }
@@ -155,10 +133,51 @@ async def update_campaign(
     if not doc:
         raise CampaignNotFoundError()
 
+    if doc["is_current"]:
+        # 지금 진행 중인 캠페인의 문구를 고친 경우, 공개 캐시(get_phrases)도 바로 반영.
+        await _cache_current(doc)
+    return doc
+
+
+async def activate_campaign(phrases_id: str) -> dict:
+    """phrases_id를 "현재 캠페인"으로 전환하는 유일한 지점. 문구 내용이나 Redis 집계는
+    건드리지 않는다 — 집계를 남기고 싶으면 전환 전에 반드시 sync_stats를 먼저 호출해야
+    한다("진행 중인 캠페인은 끝나기 전에 전환하지 않는다"는 운영 규칙을 전제로 함)."""
+
+    doc = await phrases_col.find_one_and_update(
+        {"_id": phrases_id, "deleted_at": None},
+        {"$set": {"is_current": True}},
+        return_document=ReturnDocument.AFTER,
+    )
+    if not doc:
+        raise CampaignNotFoundError()
+
     await phrases_col.update_many(
         {"is_current": True, "_id": {"$ne": phrases_id}}, {"$set": {"is_current": False}}
     )
     await _cache_current(doc)
+    return doc
+
+
+async def sync_stats(phrases_id: str) -> dict:
+    """현재 캠페인의 Redis 집계(KEY_TOTAL/KEY_CLIENTS)를 그 문서의 total_clicks/
+    unique_clients/synced_at에 영구 저장하고 카운터를 리셋한다. 다음 캠페인으로
+    전환(activate_campaign)하기 전에 반드시 호출해야 집계가 끊기지 않는다."""
+
+    doc = await phrases_col.find_one({"_id": phrases_id, "deleted_at": None})
+    if not doc:
+        raise CampaignNotFoundError()
+    if not doc["is_current"]:
+        raise CampaignNotCurrentError()
+
+    total = int(await redis_client.get(KEY_TOTAL) or 0)
+    unique_clients = int(await redis_client.scard(KEY_CLIENTS) or 0)
+    doc = await phrases_col.find_one_and_update(
+        {"_id": phrases_id},
+        {"$set": {"total_clicks": total, "unique_clients": unique_clients, "synced_at": utcnow()}},
+        return_document=ReturnDocument.AFTER,
+    )
+    await redis_client.delete(KEY_TOTAL, KEY_CLIENTS)
     return doc
 
 

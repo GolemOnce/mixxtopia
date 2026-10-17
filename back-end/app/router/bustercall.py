@@ -47,6 +47,9 @@ def _to_response(doc: dict) -> BustercallCampaignResponse:
         fixed2=doc["fixed2"],
         fixed4=doc["fixed4"],
         is_current=doc["is_current"],
+        total_clicks=doc.get("total_clicks"),
+        unique_clients=doc.get("unique_clients"),
+        synced_at=doc.get("synced_at"),
     )
 
 
@@ -99,3 +102,31 @@ async def delete_campaign(
         await bustercall_service.delete_campaign(phrases_id, current_user.user_id)
     except bustercall_service.CampaignNotFoundError as exc:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "캠페인을 찾을 수 없습니다.") from exc
+
+
+@router.post("/campaigns/{phrases_id}/activate", response_model=BustercallCampaignResponse)
+async def activate_campaign(
+    phrases_id: str,
+    _current_user: User = Depends(require_roles(UserRole.admin, UserRole.manager)),
+):
+    try:
+        doc = await bustercall_service.activate_campaign(phrases_id)
+    except bustercall_service.CampaignNotFoundError as exc:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "캠페인을 찾을 수 없습니다.") from exc
+    return _to_response(doc)
+
+
+@router.post("/campaigns/{phrases_id}/sync-stats", response_model=BustercallCampaignResponse)
+async def sync_stats(
+    phrases_id: str,
+    _current_user: User = Depends(require_roles(UserRole.admin, UserRole.manager)),
+):
+    try:
+        doc = await bustercall_service.sync_stats(phrases_id)
+    except bustercall_service.CampaignNotFoundError as exc:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "캠페인을 찾을 수 없습니다.") from exc
+    except bustercall_service.CampaignNotCurrentError as exc:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, "현재 진행 중인 캠페인에만 적용할 수 있습니다."
+        ) from exc
+    return _to_response(doc)

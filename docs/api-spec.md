@@ -111,13 +111,19 @@
 
 ### 관리자 전용
 총공 캠페인 목록 조회	GET	/api/bustercall/campaigns	총공	admin,manager
-총공 캠페인 신규 등록	POST	/api/bustercall/campaigns	총공	admin,manager
-총공 캠페인 수정/전환	PATCH	/api/bustercall/campaigns/{phrases_id}	총공	admin,manager
+총공 캠페인 신규 등록(초안)	POST	/api/bustercall/campaigns	총공	admin,manager
+총공 캠페인 수정	PATCH	/api/bustercall/campaigns/{phrases_id}	총공	admin,manager
+총공 캠페인 전환	POST	/api/bustercall/campaigns/{phrases_id}/activate	총공	admin,manager
+총공 데이터 저장	POST	/api/bustercall/campaigns/{phrases_id}/sync-stats	총공	admin,manager
+총공 캠페인 삭제	DELETE	/api/bustercall/campaigns/{phrases_id}	총공	admin,manager
 
 ### 참고
-- 총공은 1회성 캠페인(한 번에 하나만 진행)이라 phrases 문서 중 `is_current: true`인 것만 사용
-- `POST /api/bustercall/campaigns`는 (category, detail, member) 조합이 이미 있으면 409로 거절(실수로 기존 캠페인 덮어쓰기 방지) — 새 문서를 만들고 is_current=true로, 기존 캠페인들은 false로 전환
-- `PATCH /api/bustercall/campaigns/{phrases_id}`는 기존 캠페인의 문구 내용(pairs/fixed2/fixed4)만 수정하고 is_current=true로 전환. category/detail/member(식별자)는 변경 불가 — 바꾸려면 새로 등록
+- 총공은 1회성 캠페인(한 번에 하나만 진행)이라 phrases 문서 중 `is_current: true`인 것만 실제 클릭 집계에 사용됨
+- 등록/수정/전환/데이터 저장/삭제가 전부 분리된 액션 — 등록은 항상 is_current=false(초안)로 생성되고, 실제로 라이브로 바꾸려면 반드시 전환(activate)을 따로 호출해야 함
+- `POST /api/bustercall/campaigns`는 (category, detail, member) 조합이 이미 있으면 409로 거절(실수로 기존 캠페인 덮어쓰기 방지)
+- `PATCH /api/bustercall/campaigns/{phrases_id}`는 문구 내용(pairs/fixed2/fixed4)만 수정하고 is_current는 건드리지 않음. category/detail/member(식별자)는 변경 불가 — 바꾸려면 새로 등록
+- `POST /api/bustercall/campaigns/{phrases_id}/activate`는 해당 캠페인을 is_current=true로, 나머지는 false로 전환만 함(Redis 집계는 건드리지 않음) — 전환 전에 반드시 데이터 저장(sync-stats)을 먼저 호출해야 직전 캠페인의 집계가 끊기지 않음("진행 중인 캠페인은 끝나기 전에 전환하지 않는다"는 운영 규칙을 전제로 함)
+- `POST /api/bustercall/campaigns/{phrases_id}/sync-stats`는 현재 is_current인 캠페인에만 적용 가능(아니면 409) — Redis `total`/`unique_clients` 값을 그 문서의 `total_clicks`/`unique_clients`/`synced_at`에 저장하고 Redis 카운터를 리셋
 - 관리자 페이지는 `GET /api/bustercall/campaigns`로 최신순 목록을 보여주고, 그중 하나를 선택하면 문구가 폼에 자동으로 채워짐(수정용), "새로 만들기"를 선택하면 빈 폼(신규 등록용)
 
 ## playlist(playlist.py)

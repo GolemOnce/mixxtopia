@@ -72,6 +72,11 @@ async def create_schedule(payload: ScheduleCreateRequest, created_by: UUID) -> d
     )
     doc = schedule.model_dump(mode="json")
     doc["_id"] = doc.pop("schedule_id")
+    # source_official_id가 unique+sparse 인덱스라서, None을 그대로 저장하면("명시적
+    # null") sparse가 걸러주는 "필드 없음"과 달리 유니크 체크에 걸려 두 번째 수동 등록부터
+    # E11000 중복키 에러로 500이 났다 — 필드 자체를 아예 빼서 sparse가 제대로 스킵하게 한다.
+    if doc.get("source_official_id") is None:
+        doc.pop("source_official_id", None)
     await schedules_col.insert_one(doc)
     return doc
 

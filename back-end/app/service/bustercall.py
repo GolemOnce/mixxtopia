@@ -64,10 +64,35 @@ async def list_campaigns() -> list[dict]:
     return [doc async for doc in phrases_col.find({"deleted_at": None}).sort("updated_at", -1)]
 
 
+async def _archive_stats_if_switching(exclude_id: str) -> None:
+    """is_current였던 캠페인이 exclude_id와 다를 때만(=진짜 다른 캠페인으로 전환할 때만)
+    Redis 집계를 그 캠페인 문서에 영구 저장하고 카운터를 리셋한다. 같은 캠페인을 계속
+    현재로 유지한 채 문구만 고치는 경우(진행 중 템플릿 추가 등)는 건드리지 않는다.
+
+    "진행 중인 캠페인은 끝나기 전에 전환하지 않는다"는 운영 규칙을 전제로 한다 — 이
+    전제가 깨지면(테스트 전환 등) 재전환 시 이전 집계가 덮어써질 수 있음을 감수한다."""
+
+    previous = await phrases_col.find_one({"is_current": True, "deleted_at": None})
+    if not previous or previous["_id"] == exclude_id:
+        return
+
+    total = int(await redis_client.get(KEY_TOTAL) or 0)
+    unique_clients = int(await redis_client.scard(KEY_CLIENTS) or 0)
+    await phrases_col.update_one(
+        {"_id": previous["_id"]},
+        {"$set": {"total_clicks": total, "unique_clients": unique_clients, "synced_at": utcnow()}},
+    )
+    await redis_client.delete(KEY_TOTAL, KEY_CLIENTS)
+
+
 async def create_campaign(payload: BustercallCampaignCreateRequest, created_by: UUID) -> dict:
     """(category, detail, member) 조합이 이미 있으면 거절한다 — 관리자가 실수로 기존
     캠페인을 덮어쓰지 않도록, 바꾸고 싶으면 반드시 update_campaign(목록에서 선택)을 쓰게 한다.
-    soft delete된 문서는 존재 체크에서 제외(같은 조합으로 재등록 가능)."""
+    soft delete된 문서는 존재 체크에서 제외(같은 조합으로 재등록 가능).
+
+    새로 만든 캠페인은 is_current=False(초안)로 저장된다 — 템플릿 추가가 곧바로 라이브
+    전환으로 이어지면 안 되므로, 실제로 "현재 캠페인"으로 전환하려면 목록에서 선택해
+    update_campaign으로 저장해야 한다."""
 
     existing = await phrases_col.find_one(
         {
@@ -88,19 +113,17 @@ async def create_campaign(payload: BustercallCampaignCreateRequest, created_by: 
         pairs=[list(pair) for pair in payload.pairs],
         fixed2=payload.fixed2,
         fixed4=payload.fixed4,
-        is_current=True,
+        is_current=False,
         created_by=created_by,
     )
     doc = phrase.model_dump(mode="json")
     doc["_id"] = doc.pop("phrases_id")
 
-    await phrases_col.update_many({"is_current": True}, {"$set": {"is_current": False}})
     try:
         await phrases_col.insert_one(doc)
     except DuplicateKeyError as exc:
         raise CampaignAlreadyExistsError() from exc
 
-    await _cache_current(doc)
     return doc
 
 
@@ -108,7 +131,12 @@ async def update_campaign(
     phrases_id: str, payload: BustercallCampaignUpdateRequest, updated_by: UUID
 ) -> dict:
     """기존 캠페인의 문구 내용만 수정하고 is_current로 전환한다. category/detail/member(식별자)는
-    바꾸지 않는다 — 바꾸고 싶으면 새 캠페인으로 등록해야 한다."""
+    바꾸지 않는다 — 바꾸고 싶으면 새 캠페인으로 등록해야 한다.
+
+    이 함수가 "현재 캠페인"으로 전환되는 유일한 지점이라, 다른 캠페인에서 전환해오는
+    경우에만 그 이전 캠페인의 Redis 집계를 아카이브+리셋한다(_archive_stats_if_switching)."""
+
+    await _archive_stats_if_switching(phrases_id)
 
     doc = await phrases_col.find_one_and_update(
         {"_id": phrases_id, "deleted_at": None},

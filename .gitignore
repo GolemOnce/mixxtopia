@@ -46,4 +46,5 @@ x_index.html
 /terraform/.terraform/
 /terraform/terraform.tfvars
 /terraform/*.tfplan
+/terraform/tfplan
 /terraform/crash.log

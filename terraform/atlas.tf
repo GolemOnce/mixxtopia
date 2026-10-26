@@ -15,7 +15,9 @@ resource "mongodbatlas_cluster" "main" {
   provider_region_name        = "AP_NORTHEAST_2"
   provider_instance_size_name = "M0"
 
-  mongo_db_major_version = "7.0"
+  # M0(무료 티어)는 Atlas가 메이저 버전을 자동으로 올린다(7.0 → 8.0 확인). 코드를 실제 버전에
+  # 맞춰두지 않으면 plan마다 다운그레이드 시도가 잡힌다.
+  mongo_db_major_version = "8.0"
 }
 
 resource "random_password" "atlas_app_user" {
@@ -40,6 +42,16 @@ resource "mongodbatlas_project_ip_access_list" "app_server" {
   project_id = mongodbatlas_project.main.id
   ip_address = aws_eip.app.public_ip
   comment    = "${var.project_name} app server (terraform-managed)"
+}
+
+# 로컬 크롤러(x_crawler)가 Atlas에 직접 적재할 수 있도록 관리자 PC IP도 허용한다.
+# 콘솔에서 손으로 추가하면 terraform 밖에서 상태가 어긋나므로 반드시 여기서 관리.
+resource "mongodbatlas_project_ip_access_list" "admin" {
+  for_each = toset(var.admin_ip_cidrs)
+
+  project_id = mongodbatlas_project.main.id
+  cidr_block = each.value
+  comment    = "${var.project_name} admin PC (terraform-managed)"
 }
 
 locals {

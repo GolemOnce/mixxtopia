@@ -121,6 +121,13 @@ resource "aws_instance" "app" {
   tags = {
     Name = "${var.project_name}-app"
   }
+
+  # data.aws_ami.ubuntu는 most_recent라 Canonical이 새 AMI를 낼 때마다 ID가 바뀐다.
+  # 그대로 두면 plan마다 운영 인스턴스 교체(destroy → create)가 잡히므로 최초 생성 후엔 무시한다.
+  # OS를 올리고 싶으면 이 줄을 잠깐 빼고 의도적으로 교체할 것.
+  lifecycle {
+    ignore_changes = [ami]
+  }
 }
 
 # 인스턴스를 교체해도(테라폼 재생성 등) IP가 바뀌지 않게 고정 — 가비아 DNS A레코드를

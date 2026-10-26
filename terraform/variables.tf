@@ -55,6 +55,12 @@ variable "atlas_org_id" {
   type        = string
 }
 
+variable "admin_ip_cidrs" {
+  description = "Atlas 접속을 추가로 허용할 관리자 PC IP 대역(로컬 크롤러용). 예: [\"1.2.3.4/32\"]"
+  type        = list(string)
+  default     = []
+}
+
 variable "media_bucket_name" {
   description = "미디어(사진/동영상) 저장용 S3 버킷 이름(전역에서 유일해야 함)"
   type        = string

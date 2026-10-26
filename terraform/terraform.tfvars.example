@@ -15,4 +15,7 @@ atlas_public_key  = "CHANGE_ME"
 atlas_private_key = "CHANGE_ME"
 atlas_org_id      = "CHANGE_ME"
 
+# 로컬 크롤러가 Atlas에 직접 붙을 관리자 PC IP(EC2 EIP는 자동으로 허용됨)
+admin_ip_cidrs = ["1.2.3.4/32"]
+
 media_bucket_name = "mixxtopia-media"

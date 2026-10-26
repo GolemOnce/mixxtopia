@@ -24,7 +24,13 @@
 ```bash
 cp terraform.tfvars.example terraform.tfvars
 # terraform.tfvars를 열어 ssh_public_key_path, atlas_public_key/private_key/org_id,
-# ssh_allowed_cidr(가능하면 본인 IP로 좁히기) 채우기
+# ssh_allowed_cidr(가능하면 본인 IP로 좁히기), admin_ip_cidrs(로컬 크롤러용 Atlas 허용 IP) 채우기
+```
+
+콘솔에서 이미 손으로 추가해둔 Atlas IP가 있다면, apply 전에 상태로 가져와야 중복 생성 에러가 안 난다:
+
+```bash
+terraform import 'mongodbatlas_project_ip_access_list.admin["<IP>/32"]' "<ATLAS_PROJECT_ID>-<IP>/32"
 ```
 
 ## 적용

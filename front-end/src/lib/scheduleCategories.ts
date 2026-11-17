@@ -1,3 +1,7 @@
+import { useCallback, useEffect, useState } from 'react'
+
+import { api } from '../api/client'
+
 export interface ScheduleItem {
   schedule_id: string
   title: string
@@ -11,46 +15,42 @@ export interface ScheduleItem {
   end_at: string
 }
 
-// 백엔드 검증에 쓰이는 고정 목록이 아니라, 자동완성용 힌트일 뿐이다.
-// 모르는 값이 와도 CATEGORY_LABELS에 없으면 그냥 원문 그대로 보여준다.
-export const SUGGESTED_CATEGORIES = [
-  'musicbroad',
-  'radio',
-  'broadcast',
-  'award',
-  'festival',
-  'concert',
-  'fanmeeting',
-  'fansign',
-  'etc',
-]
-
-export const CATEGORY_LABELS: Record<string, string> = {
-  musicbroad: '음방',
-  radio: '라디오',
-  broadcast: '방송',
-  award: '시상식',
-  festival: '축제',
-  concert: '콘서트',
-  fanmeeting: '팬미팅',
-  fansign: '팬싸인회',
-  etc: '기타',
+// 관리자가 /admin/schedule-category에서 추가/수정/삭제하는 값이라 고정 목록이 아니다.
+export interface ScheduleCategoryItem {
+  category_id: string
+  label: string
+  color: string
+  order: number
 }
 
-export function categoryLabel(category: string): string {
-  return CATEGORY_LABELS[category] ?? category
+export function useScheduleCategories() {
+  const [categories, setCategories] = useState<ScheduleCategoryItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const refetch = useCallback(() => {
+    setLoading(true)
+    return api
+      .get<ScheduleCategoryItem[]>('/api/schedule-categories')
+      .then((data) => setCategories(data))
+      .catch(() => setCategories([]))
+      .finally(() => setLoading(false))
+  }, [])
+
+  useEffect(() => {
+    refetch()
+  }, [refetch])
+
+  return { categories, loading, refetch }
 }
 
-const CATEGORY_COLORS: Record<string, string> = {
-  musicbroad: '#f87171',
-  radio: '#fb923c',
-  broadcast: '#fbbf24',
-  award: '#facc15',
-  festival: '#34d399',
-  concert: '#38bdf8',
-  fanmeeting: '#818cf8',
-  fansign: '#c084fc',
-  etc: '#94a3b8',
+// 멤버 선택 버튼용 고정 목록. 값은 그대로 member 배열에 저장되는 한글 표기다
+// (bustercall.ts의 영문 키 변환과 달리, 스케줄은 애초에 한글 문자열을 그대로 써왔다).
+export const NMIXX_MEMBERS = ['릴리', '해원', '설윤', '배이', '지우', '규진']
+
+// 삭제된 종류를 참조하는 과거 일정 등 목록에 없는 category_id가 올 수 있다 — 그런 경우
+// 원문 그대로 보여준다.
+export function findCategoryLabel(categories: ScheduleCategoryItem[], categoryId: string): string {
+  return categories.find((c) => c.category_id === categoryId)?.label ?? categoryId
 }
 
 // 자유 문자열이라 모르는 카테고리가 올 수 있다 — 그런 경우 문자열을 해시해서
@@ -67,12 +67,13 @@ const FALLBACK_PALETTE = [
   '#94a3b8',
 ]
 
-export function categoryColor(category: string): string {
-  if (CATEGORY_COLORS[category]) return CATEGORY_COLORS[category]
+export function findCategoryColor(categories: ScheduleCategoryItem[], categoryId: string): string {
+  const known = categories.find((c) => c.category_id === categoryId)?.color
+  if (known) return known
 
   let hash = 0
-  for (let i = 0; i < category.length; i++) {
-    hash = (hash * 31 + category.charCodeAt(i)) >>> 0
+  for (let i = 0; i < categoryId.length; i++) {
+    hash = (hash * 31 + categoryId.charCodeAt(i)) >>> 0
   }
   return FALLBACK_PALETTE[hash % FALLBACK_PALETTE.length]
 }

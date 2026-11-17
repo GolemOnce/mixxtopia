@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import { api, authErrorMessage } from '../api/client'
 import { useCurrentUser } from '../auth/useCurrentUser'
 import LinkifiedText from '../components/LinkifiedText'
 import LinkPreview from '../components/LinkPreview'
 import Modal from '../components/Modal'
+import ScheduleFormModal from '../components/ScheduleFormModal'
 import {
   addMonths,
   buildMonthGrid,
@@ -15,7 +15,13 @@ import {
   WEEKDAY_LABELS,
 } from '../lib/calendar'
 import { formatDate } from '../lib/date'
-import { categoryColor, categoryLabel, type ScheduleItem } from '../lib/scheduleCategories'
+import {
+  findCategoryColor,
+  findCategoryLabel,
+  useScheduleCategories,
+  type ScheduleCategoryItem,
+  type ScheduleItem,
+} from '../lib/scheduleCategories'
 
 type ViewMode = 'calendar' | 'board'
 
@@ -26,8 +32,19 @@ const VIEW_LABELS: Record<ViewMode, string> = {
   board: '게시판',
 }
 
-function CategoryDot({ category }: { category: string }) {
-  return <span className="calendar-dot" style={{ background: categoryColor(category) }} />
+function CategoryDot({
+  category,
+  categories,
+}: {
+  category: string
+  categories: ScheduleCategoryItem[]
+}) {
+  return (
+    <span
+      className="calendar-dot"
+      style={{ background: findCategoryColor(categories, category) }}
+    />
+  )
 }
 
 function ChevronLeft() {
@@ -67,8 +84,8 @@ function formatTime(iso: string): string {
 const CELL_CHIP_LIMIT = 2
 
 export default function Schedule() {
-  const navigate = useNavigate()
   const { isAdmin } = useCurrentUser()
+  const { categories } = useScheduleCategories()
 
   const now = new Date()
   const [viewMode, setViewMode] = useState<ViewMode>('calendar')
@@ -81,6 +98,8 @@ export default function Schedule() {
     year === now.getFullYear() && month === now.getMonth() + 1 ? now.getDate() : null,
   )
   const [modalSchedule, setModalSchedule] = useState<ScheduleItem | null>(null)
+  const [newModalOpen, setNewModalOpen] = useState(false)
+  const [editSchedule, setEditSchedule] = useState<ScheduleItem | null>(null)
   const [pickerOpen, setPickerOpen] = useState(false)
   const [pickerYear, setPickerYear] = useState(year)
 
@@ -166,7 +185,7 @@ export default function Schedule() {
         className="schedule-chip"
         onClick={() => setModalSchedule(s)}
       >
-        <CategoryDot category={s.category} />
+        <CategoryDot category={s.category} categories={categories} />
         {s.title}
       </button>
     )
@@ -260,11 +279,7 @@ export default function Schedule() {
           </button>
         </div>
         {isAdmin && (
-          <button
-            type="button"
-            className="board-write-btn"
-            onClick={() => navigate('/schedule/new')}
-          >
+          <button type="button" className="board-write-btn" onClick={() => setNewModalOpen(true)}>
             ✎ 일정 등록
           </button>
         )}
@@ -310,7 +325,9 @@ export default function Schedule() {
                                     key={s.schedule_id}
                                     type="button"
                                     className="calendar-mini-chip"
-                                    style={{ background: categoryColor(s.category) }}
+                                    style={{
+                                      background: findCategoryColor(categories, s.category),
+                                    }}
                                     onClick={(e) => {
                                       e.stopPropagation()
                                       setSelectedDay(day)
@@ -365,9 +382,9 @@ export default function Schedule() {
                 >
                   <span
                     className="schedule-side-badge"
-                    style={{ background: categoryColor(s.category) }}
+                    style={{ background: findCategoryColor(categories, s.category) }}
                   >
-                    {categoryLabel(s.category)}
+                    {findCategoryLabel(categories, s.category)}
                   </span>
                   <div className="schedule-side-title">{s.title}</div>
                   <div className="muted">{formatTime(s.start_at)}</div>
@@ -398,7 +415,7 @@ export default function Schedule() {
 
       {modalSchedule && (
         <Modal onClose={() => setModalSchedule(null)}>
-          <div className="muted">{categoryLabel(modalSchedule.category)}</div>
+          <div className="muted">{findCategoryLabel(categories, modalSchedule.category)}</div>
           <h2>{modalSchedule.title}</h2>
           <div className="muted">{formatDate(modalSchedule.start_at)}</div>
           <div className="muted">
@@ -413,12 +430,33 @@ export default function Schedule() {
           )}
           {isAdmin && (
             <div className="row">
+              <button
+                type="button"
+                onClick={() => {
+                  setEditSchedule(modalSchedule)
+                  setModalSchedule(null)
+                }}
+              >
+                수정
+              </button>
               <button type="button" onClick={() => handleDelete(modalSchedule.schedule_id)}>
                 삭제
               </button>
             </div>
           )}
         </Modal>
+      )}
+
+      {newModalOpen && (
+        <ScheduleFormModal onClose={() => setNewModalOpen(false)} onSaved={loadSchedules} />
+      )}
+
+      {editSchedule && (
+        <ScheduleFormModal
+          schedule={editSchedule}
+          onClose={() => setEditSchedule(null)}
+          onSaved={loadSchedules}
+        />
       )}
     </div>
   )

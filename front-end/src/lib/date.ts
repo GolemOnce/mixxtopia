@@ -39,3 +39,11 @@ export function formatDateTimeKST(iso: string): string {
 export function toIso(datetimeLocal: string): string {
   return new Date(datetimeLocal).toISOString()
 }
+
+// toIso의 역변환 — <input type="datetime-local">에 기존 값을 채워 넣을 때 쓴다
+// (보는 사람의 기기 시간대 기준, toIso와 짝을 맞춤).
+export function toDatetimeLocal(iso: string): string {
+  const d = new Date(iso)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}

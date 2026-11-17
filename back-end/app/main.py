@@ -10,6 +10,7 @@ from app.model.official import ensure_indexes as ensure_official_indexes
 from app.model.playlist import ensure_indexes as ensure_recommended_playlist_indexes
 from app.model.post import ensure_indexes as ensure_post_indexes
 from app.model.schedule import ensure_indexes as ensure_schedule_indexes
+from app.model.schedule_category import ensure_indexes as ensure_schedule_category_indexes
 from app.model.suggest import ensure_indexes as ensure_suggest_indexes
 from app.model.user import ensure_indexes as ensure_user_indexes
 from app.model.vote import ensure_indexes as ensure_vote_indexes
@@ -23,6 +24,7 @@ from app.router import (
     playlist,
     post,
     schedule,
+    schedule_category,
     suggest,
     user,
     vote,
@@ -44,6 +46,7 @@ app.include_router(user.router)
 app.include_router(link_preview.router)
 app.include_router(official.router)
 app.include_router(schedule.router)
+app.include_router(schedule_category.router)
 app.include_router(vote.router)
 app.include_router(post.router)
 app.include_router(comment.router)
@@ -61,6 +64,7 @@ async def on_startup():
     await ensure_official_indexes()
     await ensure_suggest_indexes()
     await ensure_schedule_indexes()
+    await ensure_schedule_category_indexes()
     await ensure_vote_indexes()
     await ensure_post_indexes()
     await ensure_comment_indexes()

@@ -17,7 +17,11 @@ export default function AdminHome() {
         <Link to="/official/new">오피셜 등록</Link>
       </div>
       <div className="row">
-        <Link to="/schedule/new">일정 등록</Link>
+        {/* 일정 등록은 /schedule 페이지 안의 모달로 바뀌어서, 여기선 그 페이지로만 보낸다 */}
+        <Link to="/schedule">일정 등록</Link>
+      </div>
+      <div className="row">
+        <Link to="/admin/schedule-category">일정 종류 관리</Link>
       </div>
       <div className="row">
         <Link to="/vote/new">투표 등록</Link>

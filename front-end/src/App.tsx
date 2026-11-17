@@ -7,6 +7,7 @@ import AdminAccessLog from './pages/AdminAccessLog'
 import AdminBustercall from './pages/AdminBustercall'
 import AdminHome from './pages/AdminHome'
 import AdminPlaylist from './pages/AdminPlaylist'
+import AdminScheduleCategory from './pages/AdminScheduleCategory'
 import Board from './pages/Board'
 import BoardNew from './pages/BoardNew'
 import BoardPost from './pages/BoardPost'
@@ -21,7 +22,6 @@ import PhotoSearch from './pages/PhotoSearch'
 import Playlist from './pages/Playlist'
 import Privacy from './pages/Privacy'
 import Schedule from './pages/Schedule'
-import ScheduleNew from './pages/ScheduleNew'
 import Terms from './pages/Terms'
 import Vote from './pages/Vote'
 import VoteNew from './pages/VoteNew'
@@ -48,14 +48,6 @@ export default function App() {
         />
         <Route path="/official/:officialId" element={<OfficialDetail />} />
         <Route path="/schedule" element={<Schedule />} />
-        <Route
-          path="/schedule/new"
-          element={
-            <RequireAdmin>
-              <ScheduleNew />
-            </RequireAdmin>
-          }
-        />
         <Route path="/vote" element={<Vote />} />
         <Route
           path="/vote/new"
@@ -91,6 +83,14 @@ export default function App() {
           element={
             <RequireAdmin>
               <AdminPlaylist />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/admin/schedule-category"
+          element={
+            <RequireAdmin>
+              <AdminScheduleCategory />
             </RequireAdmin>
           }
         />

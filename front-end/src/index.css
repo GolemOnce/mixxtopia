@@ -454,6 +454,12 @@ textarea {
   resize: none;
 }
 
+/* 일정 등록(ScheduleNew) — 주최/장소, 시작/종료처럼 한 줄에 두 칸을 반반씩 채우는 행. */
+.schedule-row-half > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 /* 댓글 입력칸 — 기본 textarea(좁은 고정폭)가 아니라 글쓰기 입력칸처럼 카드 폭을 그대로
    쓰고, 크기 조절 핸들 없이 고정 높이로 둔다. */
 .comment-input {

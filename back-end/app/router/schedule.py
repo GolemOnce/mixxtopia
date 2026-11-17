@@ -63,11 +63,6 @@ async def list_schedules(
     return [_to_response(doc) for doc in docs]
 
 
-@router.get("/categories", response_model=list[str])
-async def list_schedule_categories():
-    return await schedule_service.list_categories()
-
-
 @router.get("/{schedule_id}", response_model=ScheduleResponse)
 async def get_schedule(schedule_id: str):
     try:
@@ -88,6 +83,8 @@ async def create_schedule(
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST, "시작 시각은 종료 시각보다 빨라야 합니다."
         ) from exc
+    except schedule_service.InvalidCategoryError as exc:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "존재하지 않는 종류입니다.") from exc
     return _to_response(doc)
 
 
@@ -103,6 +100,8 @@ async def update_schedule(
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST, "시작 시각은 종료 시각보다 빨라야 합니다."
         ) from exc
+    except schedule_service.InvalidCategoryError as exc:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "존재하지 않는 종류입니다.") from exc
     except schedule_service.ScheduleNotFoundError as exc:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "일정을 찾을 수 없습니다.") from exc
     return _to_response(doc)

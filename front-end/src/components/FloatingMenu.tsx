@@ -9,7 +9,7 @@ interface FloatingMenuLink {
 // 메뉴별로 매칭되는 간단한 라인 아이콘(24x24 뷰박스, stroke 기반).
 const ICONS: Record<string, JSX.Element> = {
   '/': <path d="M3 11l9-8 9 8M5 10v10h14V10" />,
-  '/intro': (
+  '/information': (
     <>
       <circle cx="12" cy="12" r="9" />
       <line x1="12" y1="11" x2="12" y2="16.5" />

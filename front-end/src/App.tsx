@@ -12,7 +12,7 @@ import BoardNew from './pages/BoardNew'
 import BoardPost from './pages/BoardPost'
 import BusterCall from './pages/BusterCall'
 import Home from './pages/Home'
-import Intro from './pages/Intro'
+import Information from './pages/Information'
 import Login from './pages/Login'
 import Official from './pages/Official'
 import OfficialDetail from './pages/OfficialDetail'
@@ -32,7 +32,7 @@ export default function App() {
       <NavBar />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/intro" element={<Intro />} />
+        <Route path="/information" element={<Information />} />
         <Route path="/login" element={<Login />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />

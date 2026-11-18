@@ -70,6 +70,24 @@ NMIXX 팬을 위한 덕질 도구 모음 사이트.
 - 파일 끝 개행 한 줄
 - api 리소스는 복수형(post->posts, schedule->schedules, vote->votes), 페이지 주소는 단수형(board, schedule, vote...)
 
+### git rules
+
+- 커밋은 사용자가 직접 실행 — Claude는 변경사항 add/확인까지만 하고, 명시적으로 요청받았을 때만 commit
+- add 시 `git add -A`/`git add .` 금지, 변경된 파일을 명시적으로 지정 — 작업과 무관한 기존 untracked 파일(예: 다른 작업 중이던 스크립트)이 같이 커밋되는 사고 방지
+- `dev` 브랜치에서 작업 후 반드시 `dev`를 origin에 먼저 push하고, 그 다음에 `main`으로 merge/push(main push가 `.github/workflows/deploy.yml`의 CD를 트리거하므로 순서가 바뀌면 안 됨)
+- commit message 항목별로 간결하게 작성
+예시)
+```
+feat: 일정 등록/수정 UX 개편, 종류(카테고리) 관리 기능 추가
+- 일정 등록 폼을 게시판 글쓰기와 같은 스타일(종류/멤버 버튼 선택, 주최·장소/시작·종료 반반 레이아웃)로 리디자인
+
+- 일정 등록을 전용 페이지 대신 모달로 전환, 조회 모달에 수정 버튼을 추가해 일정 수정 기능 도입(ScheduleFormModal이 등록/수정 겸용)
+
+- 일정 종류를 고정 enum에서 관리자가 추가/수정/삭제하는 DB 컬렉션으로 전환, 관리 페이지(/admin/schedule-category) 신설
+
+- 종류 목록 조회를 Redis에 캐싱(추가/수정/삭제 시에만 무효화)해 일정 등록/수정마다 DB 쿼리가 나가지 않게 함
+```
+
 ### API 명세서
 
 - docs/api-spec.md 참조

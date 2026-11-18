@@ -52,18 +52,32 @@
 
 ## schedules(schedule.py)
 스케줄 조회	GET	/schedules	스케줄	all
-등록된 카테고리 목록 조회	GET	/schedules/categories	스케줄	all
 스케줄 상세 조회	GET	/schedules/{schedule_id}	스케줄	all
 스케줄 등록	POST	/schedules	스케줄	admin,manager
 스케줄 수정	PATCH	/schedules/{schedule_id}	스케줄	admin,manager
 스케줄 삭제	DELETE	/schedules/{schedule_id}	스케줄	admin,manager
 
 ### 참고
-- category는 enum이 아니라 자유 문자열(자세한 사유는 db-schema.md 참고) — broadcast/award/festival/concert/fanmeeting/fansign/etc 등은 자동완성용 기본값일 뿐, 새 값도 그대로 등록 가능
+- category는 더 이상 enum도 자유 문자열도 아니고, 아래 schedule-categories 컬렉션에 등록된 category_id만 유효(등록/수정 시 없는 값이면 400 — 자세한 사유는 db-schema.md 참고)
 - 등록/수정 시 start_at > end_at이면 400
 - 삭제는 soft delete(BaseEntity의 deleted_at)
 - "합법적으로 공개된 스케줄만" 정책은 코드로 검증할 수 없는 항목이라(비공식 루머 여부 판단 불가) admin/manager만 쓸 수 있게 하는 권한 제한 + 운영 정책으로 지킴
-- `GET /schedules`는 year+month 등 필터 없이 호출돼도 응답이 무한정 커지지 않도록 최대 500건으로 제한됨(`MAX_LIST_LIMIT`). 카테고리 자동완성처럼 필터링된 값만 필요하면 `GET /schedules/categories`(distinct 조회, 응답 매우 작음)를 쓸 것 — 과거 이 용도로 `GET /schedules` 전체를 필터 없이 호출해 1MB+ 응답을 매번 받아오던 버그가 있었음
+- `GET /schedules`는 year+month 등 필터 없이 호출돼도 응답이 무한정 커지지 않도록 최대 500건으로 제한됨(`MAX_LIST_LIMIT`)
+- 카테고리 목록은 `GET /schedule-categories`(아래 참고)로 조회 — 과거엔 `GET /schedules/categories`(distinct 조회)였으나 카테고리가 관리자 CRUD 가능한 별도 컬렉션으로 분리되면서 폐지됨
+
+## schedule-categories(schedule_category.py)
+일정 종류 목록 조회	GET	/schedule-categories	일정종류	all
+일정 종류 등록	POST	/schedule-categories	일정종류	admin,manager
+일정 종류 수정	PATCH	/schedule-categories/{category_id}	일정종류	admin,manager
+일정 종류 삭제	DELETE	/schedule-categories/{category_id}	일정종류	admin,manager
+
+### 참고
+- schedules.category가 참조하는 값을 관리자가 코드 배포 없이 추가/수정/삭제할 수 있게 분리한 도메인(자세한 배경은 db-schema.md 참고)
+- category_id는 영문 소문자/숫자/`_`만 허용(`^[a-z0-9_]+$`)하고 생성 후 변경 불가(PATCH 대상에서 제외) — schedules.category가 이 값을 그대로 참조하므로 바꾸면 기존 일정과의 연결이 끊어짐
+- color는 `#RRGGBB` 형식 문자열(캘린더/뱃지 표시용), label은 화면에 보여줄 이름
+- order는 등록 순서대로 자동 증가(기존 최대값+1)되며, 등록 후 수정 불가 — 노출 순서를 바꾸는 API는 아직 없음(필요해지면 추가 예정)
+- 조회(`GET /schedule-categories`)는 Redis에 캐싱(TTL 없이 두고 추가/수정/삭제 시점에만 무효화) — 일정 등록/수정마다 category_exists() 검증으로 조회되는 값이라 캐싱함
+- 삭제는 soft delete가 아니라 컬렉션에서 완전히 제거(hard delete) — 이미 등록된 일정의 category 값은 그대로 남지만 참조 무결성은 강제하지 않음(프론트는 라벨/색상 매칭 실패 시 폴백 처리)
 
 ## photos(photo.py)
 사진 목록 조회	GET	/photos	사진	all

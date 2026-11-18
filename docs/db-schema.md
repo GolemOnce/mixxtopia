@@ -91,10 +91,23 @@
 
 ### 참고
 - link의 설명이 원래 "투표 링크"로 되어있었는데 votes 테이블에서 복사하며 생긴 오타로 보여 "관련 링크"로 정정함(필드 자체는 그대로)
-- category는 원래 고정 enum(`ScheduleCategory`: broadcast, award, festival, concert, fanmeeting, fansign, etc)이었으나 자유 문자열로 완화함 — 새 스케줄 종류가 생길 때마다 코드 배포가 필요해지는 문제가 있었고, votes.organizer처럼 이 값에 따라 분기하는 로직이 없어(권한이 갈리는 posts.category와 다름) enum으로 강제할 실익이 없다고 판단
-- 기존 값들은 `app/model/schedule.py`의 `SUGGESTED_SCHEDULE_CATEGORIES`에 자동완성 힌트로만 남겨둠(검증에는 안 쓰임). 프론트는 기존에 등록된 값 + 이 힌트를 합쳐 `<datalist>`로 자동완성 제공, 새 값도 자유롭게 입력 가능
+- category는 처음엔 고정 enum(`ScheduleCategory`: broadcast, award, festival, concert, fanmeeting, fansign, etc)이었다가, 새 종류가 생길 때마다 코드 배포가 필요해지는 문제로 한 번은 자유 문자열로 완화했었음. 결국 아래 schedule_categories 컬렉션을 참조하는 값으로 다시 바꿔서(등록/수정 시 그 컬렉션에 존재하는 category_id인지 서비스 레벨에서 검증), 코드 배포 없이 관리자가 추가/수정/삭제할 수 있으면서도 오탈자로 아무 문자열이나 들어가진 않는 중간 지점으로 자리잡음
 - 등록/수정 시 start_at이 end_at보다 늦으면 400으로 거절
 - 목록 조회는 category/member 쿼리파라미터로 필터링, start_at 오름차순 정렬이 기본값. "지난 일정 숨기기" 필터는 실제 달력/게시판 화면 만들 때 필요한 형태로 다시 추가 예정(빼둠)
+
+## schedule_categories(schedule_category.py, 일정 종류)
+- category_id	varchar(20)	PK(영문 소문자/숫자/`_`, 예: concert)
+- label	varchar(20)	화면에 보여줄 이름(예: 콘서트)
+- color	varchar(7)	`#RRGGBB` 형식 색상(캘린더/뱃지 표시용)
+- order	INT	목록 노출 순서(등록 순서대로 자동 증가)
+
+### 참고
+- schedules.category가 참조하는 값을 관리자가 추가/수정/삭제할 수 있게 분리한 컬렉션(자세한 배경은 위 schedules 참고)
+- BaseEntity 중 created_at/created_by/updated_at/updated_by만 사용하고 deleted_at/deleted_by는 없음 — soft delete 대신 hard delete(완전 삭제)
+- _id(Mongo PK)에 category_id(문자열)를 그대로 사용 — users/phrases와 동일한 패턴
+- 최초 배포 시(컬렉션이 비어 있을 때)만 과거 enum 9종(음방/라디오/방송/시상식/축제/콘서트/팬미팅/팬싸인회/기타)을 기본값으로 시드함(`ensure_indexes`) — 기존 서비스 하위호환을 위함
+- 일정 등록/수정마다 category_exists()로 조회되는 데이터라 Redis에 캐싱(`schedule:categories` 키, TTL 없이 두고 추가/수정/삭제 시점에만 무효화) — bustercall의 현재 캠페인 캐싱(phrases 참고)과 동일한 패턴
+- 삭제는 hard delete라 이미 등록된 일정의 category 값과의 참조 무결성은 강제하지 않음(삭제된 종류를 쓰던 기존 일정은 프론트에서 라벨/색상 매칭 실패 시 폴백 처리)
 
 ## posts(post.py)
 - post_id	UUID	PK
